@@ -85,26 +85,27 @@ to install xray${normal}"
             echo -e "${red}jq not installed, can't generate configs"
             exit 1
         else
-            if curl -L https://raw.githubusercontent.com/XTLS/Xray-examples/main/VLESS-gRPC-REALITY/config_server.json > template_config_server.json
+            if curl -L https://raw.githubusercontent.com/XTLS/Xray-examples/main/VLESS-gRPC-REALITY/config_server.json > tmpconfig
             then
+                cat tmpconfig > template_config_server.json
                 echo -e "${green}template server config downloaded${normal}"
             else
-                echo -e "${red}can't download template server config, try again later${normal}"
-                exit 1
+                echo -e "${red}can't download template server config, trying to use that have been downloaded before${normal}"
             fi
-            if curl -L https://raw.githubusercontent.com/XTLS/Xray-examples/main/VLESS-gRPC-REALITY/config_client.json > template_config_client.json
+            if curl -L https://raw.githubusercontent.com/XTLS/Xray-examples/main/VLESS-gRPC-REALITY/config_client.json > tmpconfig
             then
+                cat tmpconfig > template_config_client.json
                 echo -e "${green}template client config downloaded${normal}"
             else
-                echo -e "${red}can't download template client config, try again later${normal}"
-                exit 1
+                echo -e "${red}can't download template client config, trying to use that have been downloaded before${normal}"
             fi
-            echo -e "Enter domain name, IPv4 or IPv6 address of your xray server:"
+            rm tmpconfig
+            echo -e "${bold}Enter domain name, IPv4 or IPv6 address of your xray server:${normal}"
             read address
             id=$(xray uuid)
             keys=$(xray x25519)
-            private_key=$(echo $keys | head -n 1 | cut -c 13-)
-            public_key=$(echo $keys | tail -n 1 | cut -c 12-)
+            private_key=$(echo $keys | cut -d " " -f 3)
+            public_key=$(echo $keys | cut -d " " -f 6)
             if command -v openssl > /dev/null
             then
                 short_id=$(openssl rand -hex 8)
@@ -115,7 +116,7 @@ containing only digits 0-9 and letters a-f, for instance
                 read short_id
                 if [ -v $short_id ]
                 then
-                    echo -e "${red}shortId not set${normal}"
+                    echo -e "${red}short id not set${normal}"
                     exit 1
                 fi
             fi
@@ -155,69 +156,74 @@ or is in the same country. Better if it is popular.
                     then
                         fake_site="www.yahoo.com"
                     fi
+                else
+                    fake_site="www.yahoo.com"
                 fi
             else
                 fake_site="www.yahoo.com"
             fi
             echo -e "${green}mimic ${fake_site}${normal}"
             port=443
-            clients=' [
+            clients=" [
                     {
-                        "id": "${id}",
-                        "email": "love@xray.com",
-                        "flow": "xtls-rprx-vision"
+                        \"id\": \"${id}\",
+                        \"email\": \"love@xray.com\",
+                        \"flow\": \"xtls-rprx-vision\"
                     }
-                ]'
-            serverRealitySettings=' {
-                    "show": false,
-                    "dest": "${fake_site}:${port}",
-                    "xver": 0,
-                    "serverNames": [ "${fake_site}" ],
-                    "privateKey": "${private_key}",
-                    "shortIds": [ "${shortId}" ]
-                }'
+                ]"
+            serverRealitySettings=" {
+                    \"show\": false,
+                    \"dest\": \"${fake_site}:${port}\",
+                    \"xver\": 0,
+                    \"serverNames\": [ \"${fake_site}\" ],
+                    \"privateKey\": \"${private_key}\",
+                    \"shortIds\": [ \"${short_id}\" ]
+                }"
             # make server config
-            cat template_config_server.json | jd '.inbounds[].port=${port} | .settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}' > config_server.json
+            cat template_config_server.json | jq ".inbounds[].port=${port} | .settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
 
-            vnext=' [
+            vnext=" [
                     {
-                        "address": "${address}",
-                        "port": ${port},
-                        "users": [
+                        \"address\": \"${address}\",
+                        \"port\": ${port},
+                        \"users\": [
                             {
-                                "id": "${id}",
-                                "alterId": 0,
-                                "email": "love@xray.com",
-                                "security": "auto",
-                                "encryption": "none",
-                                "flow": "xtls-rprx-vision"
+                                \"id\": \"${id}\",
+                                \"alterId\": 0,
+                                \"email\": \"love@xray.com\",
+                                \"security\": \"auto\",
+                                \"encryption\": \"none\",
+                                \"flow\": \"xtls-rprx-vision\"
                             }
                         ]
                     }
-                ]'
-            clientRealitySettings=' {
-                    "serverName": "${serverName}",
-                    "fingerprint": "chrome",
-                    "show": false,
-                    "publicKey": "${publicKey}",
-                    "shortId": "${shortId}",
-                    "spiderX": ""
-                }'
-            rules=' [
+                ]"
+            clientRealitySettings=" {
+                    \"serverName\": \"${serverName}\",
+                    \"fingerprint\": \"chrome\",
+                    \"show\": false,
+                    \"publicKey\": \"${publicKey}\",
+                    \"shortId\": \"${short_id}\",
+                    \"spiderX\": \"\"
+                }"
+            rules=" [
             {
-                "type": "field",
-                "domain": [ "domain:localhost", "domain:ru", "domain:su", "domain:by", "domain:cn", "domain:vk.com" ],
-                "outboundTag": "direct"
-            }
+                \"type\": \"field\",
+                \"domain\": [ \"domain:localhost\", \"domain:ru\", \"domain:su\", \"domain:by\", \"domain:cn\", \"domain:vk.com\" ],
+                \"outboundTag\": \"direct\"
+            },
             {
-                "type": "field",
-                "inboundTag": ["api"],
-                "outboundTag": "api",
-                "enabled": true
+                \"type\": \"field\",
+                \"inboundTag\": [\"api\"],
+                \"outboundTag\": \"api\",
+                \"enabled\": true
             }
-        ]'
+        ]"
             # make main client config
-            cat template_config_client.json | jd '.outbounds[].settings.vnext=${vnext} | .outbounds[].streamSettings.realitySettings=${clientRealitySettings} | .routing.rules=${rules}' > config_client.json
+            #cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq ".outbounds[].settings.vnext=${vnext} | .outbounds[].streamSettings.realitySettings=${clientRealitySettings} | .routing.rules=${rules}" > config_client.json
+            #cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq "if .outbounds[].settings.vnext? then .outbounds[].settings.vnext=${vnext} else . end | if .outbounds[].streamSettings.realitySettings? then .outbounds[].streamSettings.realitySettings=${clientRealitySettings} else . end" > config_client.json
+            #cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq ".outbounds[].settings=(if .settings.vnext? then ${vnext} else .settings end)" > config_client.json
+            cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq ".outbounds |= map(if .settings.vnext then .settings.vnext=${vnext} else . end) | .outbounds[].streamSettings.realitySettings=${clientRealitySettings} | .routing.rules=${rules}" > config_client.json
         fi
     fi
 
@@ -226,6 +232,14 @@ then
     echo -e "TODO"
 
 elif [ $command = "del" ]
+then
+    echo -e "TODO"
+
+elif [ $command = "mimic" ]
+then
+    echo -e "TODO"
+
+elif [ $command = "upgrade" ]
 then
     echo -e "TODO"
 
