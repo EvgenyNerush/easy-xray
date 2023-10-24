@@ -85,22 +85,7 @@ to install xray${normal}"
             echo -e "${red}jq not installed, can't generate configs"
             exit 1
         else
-            if curl -L https://raw.githubusercontent.com/XTLS/Xray-examples/main/VLESS-gRPC-REALITY/config_server.json > tmpconfig
-            then
-                cat tmpconfig > template_config_server.json
-                echo -e "${green}template server config downloaded${normal}"
-            else
-                echo -e "${red}can't download template server config, trying to use that have been downloaded before${normal}"
-            fi
-            if curl -L https://raw.githubusercontent.com/XTLS/Xray-examples/main/VLESS-gRPC-REALITY/config_client.json > tmpconfig
-            then
-                cat tmpconfig > template_config_client.json
-                echo -e "${green}template client config downloaded${normal}"
-            else
-                echo -e "${red}can't download template client config, trying to use that have been downloaded before${normal}"
-            fi
-            rm tmpconfig
-            echo -e "${bold}Enter domain name, IPv4 or IPv6 address of your xray server:${normal}"
+            echo -e "${bold}Enter IPv4 or IPv6 address of your xray server, or its domain name:${normal}"
             read address
             id=$(xray uuid)
             keys=$(xray x25519)
@@ -163,24 +148,25 @@ or is in the same country. Better if it is popular.
                 fake_site="www.yahoo.com"
             fi
             echo -e "${green}mimic ${fake_site}${normal}"
-            port=443
+            port=80
+            email="love@xray.com"
             clients=" [
                     {
                         \"id\": \"${id}\",
-                        \"email\": \"love@xray.com\",
-                        \"flow\": \"xtls-rprx-vision\"
+                        \"email\": \"${email}\",
+                        \"flow\": \"\"
                     }
                 ]"
             serverRealitySettings=" {
                     \"show\": false,
-                    \"dest\": \"${fake_site}:${port}\",
+                    \"dest\": \"${fake_site}:443\",
                     \"xver\": 0,
                     \"serverNames\": [ \"${fake_site}\" ],
                     \"privateKey\": \"${private_key}\",
                     \"shortIds\": [ \"${short_id}\" ]
                 }"
             # make server config
-            cat template_config_server.json | jq ".inbounds[].port=${port} | .settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
+            cat template_config_server.json | jq ".inbounds[].settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
 
             vnext=" [
                     {
@@ -190,40 +176,24 @@ or is in the same country. Better if it is popular.
                             {
                                 \"id\": \"${id}\",
                                 \"alterId\": 0,
-                                \"email\": \"love@xray.com\",
+                                \"email\": \"${email}\",
                                 \"security\": \"auto\",
                                 \"encryption\": \"none\",
-                                \"flow\": \"xtls-rprx-vision\"
+                                \"flow\": \"\"
                             }
                         ]
                     }
                 ]"
             clientRealitySettings=" {
-                    \"serverName\": \"${serverName}\",
+                    \"serverName\": \"${fake_site}\",
                     \"fingerprint\": \"chrome\",
                     \"show\": false,
-                    \"publicKey\": \"${publicKey}\",
+                    \"publicKey\": \"${public_key}\",
                     \"shortId\": \"${short_id}\",
                     \"spiderX\": \"\"
                 }"
-            rules=" [
-            {
-                \"type\": \"field\",
-                \"domain\": [ \"domain:localhost\", \"domain:ru\", \"domain:su\", \"domain:by\", \"domain:cn\", \"domain:vk.com\" ],
-                \"outboundTag\": \"direct\"
-            },
-            {
-                \"type\": \"field\",
-                \"inboundTag\": [\"api\"],
-                \"outboundTag\": \"api\",
-                \"enabled\": true
-            }
-        ]"
             # make main client config
-            #cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq ".outbounds[].settings.vnext=${vnext} | .outbounds[].streamSettings.realitySettings=${clientRealitySettings} | .routing.rules=${rules}" > config_client.json
-            #cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq "if .outbounds[].settings.vnext? then .outbounds[].settings.vnext=${vnext} else . end | if .outbounds[].streamSettings.realitySettings? then .outbounds[].streamSettings.realitySettings=${clientRealitySettings} else . end" > config_client.json
-            #cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq ".outbounds[].settings=(if .settings.vnext? then ${vnext} else .settings end)" > config_client.json
-            cat template_config_client.json | grep -v "\/\/ Server IPv4" | jq ".outbounds |= map(if .settings.vnext then .settings.vnext=${vnext} else . end) | .outbounds[].streamSettings.realitySettings=${clientRealitySettings} | .routing.rules=${rules}" > config_client.json
+            cat template_config_client.json | jq ".outbounds |= map(if .settings.vnext then .settings.vnext=${vnext} else . end) | .outbounds |= map(if .streamSettings.realitySettings then .streamSettings.realitySettings=${clientRealitySettings} else . end)" > config_client.json
         fi
     fi
 
