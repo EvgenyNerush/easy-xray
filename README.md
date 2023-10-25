@@ -1,8 +1,9 @@
 # easy-xray
 
-*Script for Linux which makes XRay installation and configuration easy.*
+*Script for Linux which makes XRay installation and configuration easy*
 
 (todo) [Readme in Russian](README.ru.md)
+
 (todo) [Readme in Chinese](README.cn.md)
 
 [XRay (aka ProjectX)](https://xtls.github.io/en/) is a frontier solution to surpass the internet censorship. It can work as a server and as
@@ -27,12 +28,19 @@ distributives.
 
 ### How it works
 
-With current configs, *XRay* creates a [grpc](https://en.wikipedia.org/wiki/GRPC) tunnel between the client (your laptop, phone etc.) and
-the server (your VPS). For the censor the tunnel looks like a usual connection to a site. The server responses to https requests as some
-popular site thus it is not suspicious for an active probing. On the client side *XRay* creates a socks proxy which can be used by your
-web browser, telegram or TorBrowser like that:
+With current configs, *XRay* creates a tunnel between the client (your laptop, phone etc.) and the server (your VPS). The tunnel uses *VLESS
+Reality* protocol that obfuscates traffic and in our case imitates [grpc](https://en.wikipedia.org/wiki/GRPC). For the censor the tunnel
+looks like a usual connection to a site. The server responses to https requests as some popular site thus it is not suspicious for an active
+probing. On the client side *XRay* creates a socks proxy which can be used by your Telegram or web
+browser like this:
 
 ![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](browser-proxy-settings.png)
+
+Note that there is no additional encryption layer in VLESS; using it you rely on the encryption that the browser (Telegram app etc.) makes.
+
+### Other clients
+
+For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests and config generation for them.
 
 ### Acknowledgements
 
@@ -40,4 +48,4 @@ web browser, telegram or TorBrowser like that:
 [XRay config reference](https://xtls.github.io/en/config/) is brilliant and helped me much.
 [Configs](https://github.com/XTLS/Xray-examples/tree/main/VLESS-gRPC-REALITY) on which the template configs are based.
 
-(TODO) about, reality-vless, domains, browser settings, no encription(!), choose domain names or geoip, configs for phone...
+(TODO) logging, choose domain names or geoip, configs for phone...
