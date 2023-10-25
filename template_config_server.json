@@ -25,7 +25,7 @@
   "inbounds": [
     {
       "listen": "0.0.0.0",
-      "port": 80,
+      "port": 50051,
       "protocol": "vless",
       "settings": {
         "clients": [

@@ -148,7 +148,6 @@ or is in the same country. Better if it is popular.
                 fake_site="www.yahoo.com"
             fi
             echo -e "${green}mimic ${fake_site}${normal}"
-            port=80
             email="love@xray.com"
             clients=" [
                     {
@@ -171,7 +170,7 @@ or is in the same country. Better if it is popular.
             vnext=" [
                     {
                         \"address\": \"${address}\",
-                        \"port\": ${port},
+                        \"port\": 50051,
                         \"users\": [
                             {
                                 \"id\": \"${id}\",

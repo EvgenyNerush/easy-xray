@@ -52,7 +52,7 @@
         "vnext": [
           {
             "address": "server_address",
-            "port": 80,
+            "port": 50051,
             "users": [
               {
                 "id": "client_id",
