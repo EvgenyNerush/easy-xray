@@ -7,28 +7,27 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 normal='\033[0m'
 
-xray_version="None"
 if command -v xray > /dev/null
 then
     xray_version=$(xray --version | head -n 1 | cut -c 6-10)
     echo -e "${yellow}xray ${xray_version} detected${normal}"
 fi
 
-jq_installed=1
 if command -v jq > /dev/null
 then
-    jq_installed=0
+    jq_installed=true
     echo -e "${green}jq found${normal}"
 else
+    jq_installed=false
     echo -e "${red}Warning: jq not installed but needed for operations with configs${normal}"
 fi
 
-is_root=1
 if [ $(id -u) -eq 0 ]
 then
-    is_root=0
+    is_root=true
     echo -e "${green}running as root${normal}"
 else
+    is_root=false
     echo -e "${red}Warning: you should be root to install xray${normal}"
 fi
 
@@ -45,25 +44,30 @@ then
     read answer
     if [ -v $answer ] || [ $(echo $answer | cut -c 1) != "n" ]
     then
-        if [ xray_version != "None" ]
+        install_xray=true
+        if command -v xray > /dev/null
         then
             echo -e "xray ${version} detected, install anyway? (y/N)"
             read answer
-            if [ ! -v $answer ] && ([ $(echo $answer | cut -c 1) = "y" ] || [ $(echo $answer | cut -c 1) = "Y" ])
+            if [ -v $answer ] || ([ $(echo $answer | cut -c 1) != "y" ] && [ $(echo $answer | cut -c 1) != "Y" ])
             then
-                if [ $is_root -ne 0 ]
+                install_xray=false
+            fi
+        fi
+        if $install_xray
+        then
+            if $is_root
+            then
+                if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
                 then
-                    echo -e "${red}You should be root, or run this script with sudo
-to install xray${normal}"
-                    exit 1
+                    echo -e "${green}xray installed${normal}"
                 else
-                    if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
-                    then
-                        echo -e "${green}xray installed${normal}"
-                    else
-                        echo -e "${red}xray not installed, something goes wrong${normal}"
-                    fi
+                    echo -e "${red}xray not installed, something goes wrong${normal}"
                 fi
+            else
+                echo -e "${red}You should be root, or run this script with sudo
+to install xray${normal}"
+                exit 1
             fi
         fi
     fi
@@ -72,15 +76,12 @@ to install xray${normal}"
     read answer
     if [ -v $answer ] || [ $(echo $answer | cut -c 1) != "n" ]
     then
-        if command -v xray > /dev/null
-        then
-            xray_version=$(xray --version | head -n 1 | cut -c 6-10)
-        fi
-        if [ $xray_version = "None" ]
+        if ! $(command -v xray > /dev/null)
         then
             echo -e "${red}xray not installed, can't generate configs"
             exit 1
-        elif [ ! $jq_installed ]
+        fi
+        if ! $jq_installed
         then
             echo -e "${red}jq not installed, can't generate configs"
             exit 1
@@ -222,12 +223,8 @@ then
         read answer
         if [ ! -v $answer ] && ([ $answer = "YES" ] || [ $answer = "yes" ])
         then
-            if [ $is_root -ne 0 ]
+            if $is_root
             then
-                echo -e "${red}You should be root, or run this script with sudo
-to remove xray${normal}"
-                exit 1
-            else
                 if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ remove --purge
                 then
                     echo -e "
@@ -236,6 +233,10 @@ ${green}xray removed${normal}"
                     echo -e "
 ${red}xray not removed${normal}"
                 fi
+            else
+                echo -e "${red}You should be root, or run this script with sudo
+to remove xray${normal}"
+                exit 1
             fi
         fi
     fi

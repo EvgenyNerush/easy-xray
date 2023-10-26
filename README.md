@@ -45,7 +45,9 @@ For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests an
 ### Acknowledgements
 
 [This article (in Russian)](https://habr.com/ru/articles/731608/) helped me to install *XRay* for the first time.
+
 [XRay config reference](https://xtls.github.io/en/config/) is brilliant and helped me much.
+
 [Configs](https://github.com/XTLS/Xray-examples/tree/main/VLESS-gRPC-REALITY) on which the template configs are based.
 
 (TODO) logging, choose domain names or geoip, configs for phone...
