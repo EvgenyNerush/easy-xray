@@ -7,6 +7,7 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 normal='\033[0m'
 
+export PATH=$PATH:/usr/local/bin/ # for sudo user this can be not in PATH
 if command -v xray > /dev/null
 then
     xray_version=$(xray --version | head -n 1 | cut -c 6-10)
@@ -41,15 +42,15 @@ if [ $command = "install" ]
 then
 
     echo -e "${bold}Download and install xray?${normal} (Y/n)"
-    read answer
-    if [ -v $answer ] || [ $(echo $answer | cut -c 1) != "n" ]
+    read answer_di
+    if [ -v $answer_di ] || [ $(echo $answer_di | cut -c 1) != "n" ]
     then
         install_xray=true
         if command -v xray > /dev/null
         then
             echo -e "xray ${version} detected, install anyway? (y/N)"
-            read answer
-            if [ -v $answer ] || ([ $(echo $answer | cut -c 1) != "y" ] && [ $(echo $answer | cut -c 1) != "Y" ])
+            read answer_ia
+            if [ -v $answer_ia ] || ([ $(echo $answer_ia | cut -c 1) != "y" ] && [ $(echo $answer_ia | cut -c 1) != "Y" ])
             then
                 install_xray=false
             fi
@@ -60,6 +61,8 @@ then
             then
                 if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
                 then
+                    mkdir -p /var/log/xray
+                    touch /var/log/xray/error.log
                     echo -e "${green}xray installed${normal}"
                 else
                     echo -e "${red}xray not installed, something goes wrong${normal}"
@@ -73,8 +76,8 @@ to install xray${normal}"
     fi
 
     echo -e "${bold}Generate configs?${normal} (Y/n)"
-    read answer
-    if [ -v $answer ] || [ $(echo $answer | cut -c 1) != "n" ]
+    read answer_gc
+    if [ -v $answer_gc ] || [ $(echo $answer_gc | cut -c 1) != "n" ]
     then
         if ! $(command -v xray > /dev/null)
         then
@@ -205,33 +208,32 @@ elif [ $command = "del" ]
 then
     echo -e "TODO"
 
-elif [ $command = "mimic" ]
-then
-    echo -e "TODO"
-
 elif [ $command = "upgrade" ]
 then
-    echo -e "TODO"
+    if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+    then
+        echo -e "${green}xray upgraded${normal}"
+    else
+        echo -e "${red}xray not upgraded${normal}"
+    fi
 
 elif [ $command = "remove" ]
 then
     echo -e "Remove xray? (y/N)"
-    read answer
-    if [ ! -v $answer ] && ([ $(echo $answer | cut -c 1) = "y" ] || [ $(echo $answer | cut -c 1) = "Y" ])
+    read answer_rx
+    if [ ! -v $answer_rx ] && ([ $(echo $answer_rx | cut -c 1) = "y" ] || [ $(echo $answer_rx | cut -c 1) = "Y" ])
     then
         echo -e "${red}Please type YES to remove${normal}"
-        read answer
-        if [ ! -v $answer ] && ([ $answer = "YES" ] || [ $answer = "yes" ])
+        read answer_y
+        if [ ! -v $answer_y ] && ([ $answer_y = "YES" ] || [ $answer_y = "yes" ])
         then
             if $is_root
             then
                 if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ remove --purge
                 then
-                    echo -e "
-${green}xray removed${normal}"
+                    echo -e "${green}xray removed${normal}"
                 else
-                    echo -e "
-${red}xray not removed${normal}"
+                    echo -e "${red}xray not removed${normal}"
                 fi
             else
                 echo -e "${red}You should be root, or run this script with sudo
@@ -251,11 +253,10 @@ Here is the list of all available commands:
 
     ${bold}help${normal}            show this message (default)
     ${bold}install${normal}         run interactive prompt, which asks to download and install
-                    XRay and generate configs for server and client;
+                    XRay and generate configs for server and client
     ${bold}add ${underl}username${normal}    add user with (any, fake) username to configs
     ${bold}del ${underl}username${normal}    delete user with given username from configs
-    ${bold}mimic ${underl}site${normal}      change site xray server imitates
-    ${bold}upgrade${normal}         upgrade xray and configs
+    ${bold}upgrade${normal}         upgrade xray, do not touch configs
     ${bold}remove${normal}          remove xray"
 fi
 
@@ -263,11 +264,17 @@ echo -e "
 Command is done.
 
 ${red}Important:${normal} It is assumed that configs are stored and updated
-locally as config_server.json and config_client_username.json files.
-You should manually start XRay with one of configs, depending
+locally as config_server.json, config_client.json or
+config_client_username.json files. You should manually
+start XRay with one of configs, depending
 which role - server or client - XRay should play:
     sudo cp config_(role).json /usr/local/etc/xray/config.json
     sudo systemctl start xray
 or
-    sudo xray run -c config_(role).json"
+    sudo xray run -c config_(role).json
+
+${red}Important:${normal} Only warnings and errors are logged
+by xray for current configs. For logs, see stdout or try
+    journalctl -u xray
+"
 

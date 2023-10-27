@@ -1,8 +1,9 @@
 {
   "log": {
-    "access": "",
+    "access": "none",
     "error": "",
-    "loglevel": "info"
+    "loglevel": "warning",
+    "dnsLog": false
   },
   "inbounds": [
     {
