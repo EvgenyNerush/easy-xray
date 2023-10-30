@@ -10,7 +10,7 @@
 a client allowing to guide traffic through a VPS outside the region of censorship. XRay configuration can be confusing for a newcomer,
 so, here is a script which helps to
 
-- install/upgrade/remove XRay
+- install/upgrade/remove XRay and geodata
 - generate credentials and server/client configs
 - (todo) add/delete users to the configs
 
@@ -38,6 +38,8 @@ proxies which can be used by your Telegram or web browser like this:
 ![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](browser-proxy-settings.png)
 
 Note that there is no additional encryption layer in VLESS; using it you rely on the encryption that the browser (Telegram app etc.) makes.
+Note also that for current client config traffic to .cn, .ru, .by and .ir sites goes directly from the client. This makes your server
+less attention-grabbing, but your connection less anonymous.
 
 ### Other clients
 

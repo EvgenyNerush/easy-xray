@@ -112,6 +112,26 @@
     "rules": [
       {
         "type": "field",
+        "domain": [
+            "geosite:cn",
+            "domain:ru",
+            "domain:by",
+            "domain:ir"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "ip": [
+            "geoip:cn",
+            "geoip:ru",
+            "geoip:by",
+            "geoip:ir"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
         "inboundTag": [
           "api"
         ],

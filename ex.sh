@@ -263,7 +263,7 @@ fi
 echo -e "
 Command is done.
 
-${red}Important:${normal} It is assumed that configs are stored and updated
+${bold}Important:${normal} It is assumed that configs are stored and updated
 locally as config_server.json, config_client.json or
 config_client_username.json files. You should manually
 start XRay with one of configs, depending
@@ -273,7 +273,7 @@ which role - server or client - XRay should play:
 or
     sudo xray run -c config_(role).json
 
-${red}Important:${normal} Only warnings and errors are logged
+${bold}Important:${normal} Only warnings and errors are logged
 by xray for current configs. For logs, see stdout or try
     journalctl -u xray
 "
