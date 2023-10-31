@@ -11,7 +11,7 @@ export PATH=$PATH:/usr/local/bin/ # for sudo user this can be not in PATH
 if command -v xray > /dev/null
 then
     xray_version=$(xray --version | head -n 1 | cut -c 6-10)
-    echo -e "${yellow}xray ${xray_version} detected${normal}"
+    echo -e "${green}xray ${xray_version} detected${normal}"
 fi
 
 if command -v jq > /dev/null
@@ -20,7 +20,7 @@ then
     echo -e "${green}jq found${normal}"
 else
     jq_installed=false
-    echo -e "${red}Warning: jq not installed but needed for operations with configs${normal}"
+    echo -e "${yellow}Warning: jq not installed but needed for operations with configs${normal}"
 fi
 
 if [ $(id -u) -eq 0 ]
@@ -29,7 +29,7 @@ then
     echo -e "${green}running as root${normal}"
 else
     is_root=false
-    echo -e "${red}Warning: you should be root to install xray${normal}"
+    echo -e "${yellow}Warning: you should be root to install xray${normal}"
 fi
 
 command="help"
@@ -91,10 +91,11 @@ to install xray${normal}"
         else
             echo -e "${bold}Enter IPv4 or IPv6 address of your xray server, or its domain name:${normal}"
             read address
-            id=$(xray uuid)
+            id=$(xray uuid) # generate random uuid for vless
             keys=$(xray x25519)
             private_key=$(echo $keys | cut -d " " -f 3)
             public_key=$(echo $keys | cut -d " " -f 6)
+            # generate random short_id for grpc-reality
             if command -v openssl > /dev/null
             then
                 short_id=$(openssl rand -hex 8)
@@ -202,7 +203,77 @@ or is in the same country. Better if it is popular.
 
 elif [ $command = "add" ]
 then
-    echo -e "TODO"
+    echo -e "${bold}add${normal}"
+    if ! $(command -v xray > /dev/null)
+    then
+        echo -e "${red}xray needed but not installed${normal}"
+    fi
+    if [ ! -f "config_client.json" ] || [ ! -r "config_server.json" ]
+    then
+        echo -e "${red}server config and config for default user are needed but not present,
+first generate them with ${normal}install${red} command.${normal}"
+        exit 1
+    fi
+    if [ -v $2 ]
+    then
+        echo -e "${red}username not set${normal}
+For default user, use config_client.json generated
+by ${underl}install${normal} command. Otherwise use non-void username,
+preferably of letters and digits only."
+        exit 1
+    else
+        username=$2
+    fi
+    configs=(config_client_*.json)
+    username_exists=false
+    for c in ${configs[@]}
+    do
+        if [ -f $c ]
+        then
+            email=$(jq '.outbounds[0].settings.vnext[0].users[0].email' $c)
+            name=$(echo $email | cut -d "@" -f 1 | cut -c 2-)
+            if [ $username = $name ]
+            then
+                username_exists=true
+            fi
+        fi
+    done
+    if $username_exists
+    then
+        echo -e "${red}username ${username} already exists, try another one${normal}"
+        exit 1
+    else
+        id=$(xray uuid) # generate random uuid for vless
+        # generate random short_id for grpc-reality
+        if command -v openssl > /dev/null
+        then
+            short_id=$(openssl rand -hex 8)
+        else
+            echo -e "Enter a random (up to) 16-digit hex number,
+containing only digits 0-9 and letters a-f, for instance
+1234567890abcdef"
+            read short_id
+            if [ -v $short_id ]
+            then
+                echo -e "${red}short id not set${normal}"
+                exit 1
+            fi
+        fi
+        # make new user config from default user config
+        cat config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${username}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > config_client_${username}.json
+        # update server config
+        client="
+          {
+            \"id\": \"${id}\",
+            \"email\": \"${username}@example.com\",
+            \"flow\": \"\"
+          }
+        "
+        cp config_server.json config_server.json.backup
+        cat config_server.json | jq ".inbounds[0].settings.clients += [${client}] | .inbounds[0].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > config_server.json
+        echo -e "${green}config_client_${username}.json is written,
+config_server.json is updated${normal}"
+    fi
 
 elif [ $command = "del" ]
 then
@@ -272,9 +343,5 @@ which role - server or client - XRay should play:
     sudo systemctl start xray
 or
     sudo xray run -c config_(role).json
-
-${bold}Important:${normal} Only warnings and errors are logged
-by xray for current configs. For logs, see stdout or try
-    journalctl -u xray
 "
 
