@@ -207,6 +207,12 @@ then
     if ! $(command -v xray > /dev/null)
     then
         echo -e "${red}xray needed but not installed${normal}"
+        exit 1
+    fi
+    if ! $jq_installed
+    then
+        echo -e "${red}jq needed but not installed${normal}"
+        exit 1
     fi
     if [ ! -f "config_client.json" ] || [ ! -r "config_server.json" ]
     then
@@ -270,14 +276,38 @@ containing only digits 0-9 and letters a-f, for instance
           }
         "
         cp config_server.json config_server.json.backup
-        cat config_server.json | jq ".inbounds[0].settings.clients += [${client}] | .inbounds[0].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > config_server.json
+        cat config_server.json.backup | jq ".inbounds[0].settings.clients += [${client}] | .inbounds[0].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > config_server.json
         echo -e "${green}config_client_${username}.json is written,
 config_server.json is updated${normal}"
     fi
 
 elif [ $command = "del" ]
 then
-    echo -e "TODO"
+    echo -e "${bold}del${normal}"
+    if ! $jq_installed
+    then
+        echo -e "${red}jq needed but not installed${normal}"
+        exit 1
+    fi
+    if [ -v $2 ]
+    then
+        echo -e "${red}username not set${normal}"
+        exit 1
+    else
+        username=$2
+    fi
+    config="config_client_${username}.json"
+    if [ ! -f $config ]
+    then
+        echo -e "${red}no config for user ${username}${normal}"
+        exit 1
+    fi
+    short_id=$(jq ".outbounds[0].streamSettings.realitySettings.shortId" $config)
+    cp config_server.json config_server.json.backup
+    cat config_server.json.backup | jq "del(.inbounds[0].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[0].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > config_server.json
+    rm config_client_${username}.json
+        echo -e "${green}config_client_${username}.json is deleted,
+config_server.json is updated${normal}"
 
 elif [ $command = "upgrade" ]
 then
