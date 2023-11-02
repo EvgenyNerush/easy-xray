@@ -171,7 +171,8 @@ or is in the same country. Better if it is popular.
                 }"
             # make server config
             cat template_config_server.json | jq ".inbounds[].settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
-
+            # then make the user (not root) an owner of a file
+            [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
             vnext=" [
                     {
                         \"address\": \"${address}\",
@@ -198,6 +199,8 @@ or is in the same country. Better if it is popular.
                 }"
             # make main client config
             cat template_config_client.json | jq ".outbounds |= map(if .settings.vnext then .settings.vnext=${vnext} else . end) | .outbounds |= map(if .streamSettings.realitySettings then .streamSettings.realitySettings=${clientRealitySettings} else . end)" > config_client.json
+            # then make the user (not root) an owner of a file
+            [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_client.json
         fi
     fi
 
@@ -267,6 +270,8 @@ containing only digits 0-9 and letters a-f, for instance
         fi
         # make new user config from default user config
         cat config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${username}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > config_client_${username}.json
+        # then make the user (not root) an owner of a file
+        [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_client.json
         # update server config
         client="
           {
@@ -276,7 +281,10 @@ containing only digits 0-9 and letters a-f, for instance
           }
         "
         cp config_server.json config_server.json.backup
+        # update server config
         cat config_server.json.backup | jq ".inbounds[0].settings.clients += [${client}] | .inbounds[0].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > config_server.json
+        # then make the user (not root) an owner of a file
+        [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
         echo -e "${green}config_client_${username}.json is written,
 config_server.json is updated${normal}"
     fi
@@ -304,7 +312,10 @@ then
     fi
     short_id=$(jq ".outbounds[0].streamSettings.realitySettings.shortId" $config)
     cp config_server.json config_server.json.backup
+    # update server config
     cat config_server.json.backup | jq "del(.inbounds[0].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[0].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > config_server.json
+    # then make the user (not root) an owner of a file
+    [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
     rm config_client_${username}.json
         echo -e "${green}config_client_${username}.json is deleted,
 config_server.json is updated${normal}"
