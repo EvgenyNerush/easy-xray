@@ -7,6 +7,19 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 normal='\033[0m'
 
+# strip lines with comments from jsonC
+jsonc2json () {
+    if [ ! -v $1 ]
+    then
+        filename=$1
+        cat $filename | grep -v \/\/
+    else
+        echo "${red}jsonc2json: no argument is given${red}"
+        exit 1
+    fi
+}
+
+
 export PATH=$PATH:/usr/local/bin/ # for sudo user this can be not in PATH
 if command -v xray > /dev/null
 then
@@ -111,15 +124,16 @@ containing only digits 0-9 and letters a-f, for instance
                 fi
             fi
             echo -e "${bold}Choose a fake site to mimic.${normal}
-It is better if it is hosted by your VPS provider
-or is in the same country. Better if it is popular.
-(1) www.yahoo.com (default)
+Better if it is: hosted by your VPS provider,
+in the same country, it is popular,
+and have only ports 80 (http) and 443 (https) open
+(can check with `nmap -T4 hostname`)
+(1) www.youtube.com (default)
 (2) www.microsoft.com
 (3) www.google.com
-(4) www.nvidia.com
-(5) www.amd.com
-(6) www.samsung.com
-(7) your variant"
+(4) www.bing.com
+(5) www.yahoo.com
+(6) your variant"
             read number
             if [ ! -v $number ]
             then
@@ -131,26 +145,23 @@ or is in the same country. Better if it is popular.
                     fake_site="www.google.com"
                 elif [ $number -eq 4 ]
                 then
-                    fake_site="www.nvidia.com"
+                    fake_site="www.bing.com"
                 elif [ $number -eq 5 ]
                 then
-                    fake_site="www.amd.com"
+                    fake_site="www.yahoo.com"
                 elif [ $number -eq 6 ]
-                then
-                    fake_site="www.samsung.com"
-                elif [ $number -eq 7 ]
                 then
                     echo -e "type your variant:"
                     read fake_site
                     if [ -v $fake_site ]
                     then
-                        fake_site="www.yahoo.com"
+                        fake_site="www.youtube.com"
                     fi
                 else
-                    fake_site="www.yahoo.com"
+                    fake_site="www.youtube.com"
                 fi
             else
-                fake_site="www.yahoo.com"
+                fake_site="www.youtube.com"
             fi
             echo -e "${green}mimic ${fake_site}${normal}"
             email="love@xray.com"
@@ -158,7 +169,7 @@ or is in the same country. Better if it is popular.
                     {
                         \"id\": \"${id}\",
                         \"email\": \"${email}\",
-                        \"flow\": \"\"
+                        \"flow\": \"xtls-rprx-vision\"
                     }
                 ]"
             serverRealitySettings=" {
@@ -170,35 +181,32 @@ or is in the same country. Better if it is popular.
                     \"shortIds\": [ \"${short_id}\" ]
                 }"
             # make server config
-            cat template_config_server.json | jq ".inbounds[].settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
+            jsonc2json template_config_server.jsonc | jq ".inbounds[].settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
             vnext=" [
                     {
                         \"address\": \"${address}\",
-                        \"port\": 50051,
+                        \"port\": 443,
                         \"users\": [
                             {
                                 \"id\": \"${id}\",
-                                \"alterId\": 0,
                                 \"email\": \"${email}\",
-                                \"security\": \"auto\",
                                 \"encryption\": \"none\",
-                                \"flow\": \"\"
+                                \"flow\": \"xtls-rprx-vision\"
                             }
                         ]
                     }
                 ]"
             clientRealitySettings=" {
-                    \"serverName\": \"${fake_site}\",
                     \"fingerprint\": \"chrome\",
+                    \"serverName\": \"${fake_site}\",
                     \"show\": false,
                     \"publicKey\": \"${public_key}\",
                     \"shortId\": \"${short_id}\",
-                    \"spiderX\": \"\"
                 }"
             # make main client config
-            cat template_config_client.json | jq ".outbounds |= map(if .settings.vnext then .settings.vnext=${vnext} else . end) | .outbounds |= map(if .streamSettings.realitySettings then .streamSettings.realitySettings=${clientRealitySettings} else . end)" > config_client.json
+            jsonc2json template_config_client.jsonc | jq ".outbounds |= map(if .settings.vnext then .settings.vnext=${vnext} else . end) | .outbounds |= map(if .streamSettings.realitySettings then .streamSettings.realitySettings=${clientRealitySettings} else . end)" > config_client.json
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_client.json
         fi
@@ -277,7 +285,7 @@ containing only digits 0-9 and letters a-f, for instance
           {
             \"id\": \"${id}\",
             \"email\": \"${username}@example.com\",
-            \"flow\": \"\"
+            \"flow\": \"xtls-rprx-vision\"
           }
         "
         cp config_server.json config_server.json.backup

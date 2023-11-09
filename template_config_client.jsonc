@@ -1,3 +1,5 @@
+// This config is based on
+// https://github.com/XTLS/Xray-examples/blob/main/VLESS-TCP-XTLS-Vision-REALITY/REALITY.ENG.md
 {
   "log": {
     "access": "none",
@@ -5,24 +7,25 @@
     "loglevel": "warning",
     "dnsLog": false
   },
+  // client-side inbound configuration
   "inbounds": [
     {
       "tag": "socks",
       "port": 800,
       "listen": "127.0.0.1",
       "protocol": "socks",
+      // used to make transparent proxies, see https://xtls.github.io/en/config/inbound.html#sniffingobject
       "sniffing": {
         "enabled": true,
         "destOverride": [
           "http",
           "tls"
-        ],
-        "routeOnly": false
+        ]
       },
+      // settings of inbound `protocol` (see above)
       "settings": {
         "auth": "noauth",
-        "udp": true,
-        "allowTransparent": false
+        "udp": true
       }
     },
     {
@@ -30,6 +33,7 @@
       "port": 801,
       "listen": "127.0.0.1",
       "protocol": "http",
+      // used to make transparent proxies, see https://xtls.github.io/en/config/inbound.html#sniffingobject
       "sniffing": {
         "enabled": true,
         "destOverride": [
@@ -38,75 +42,66 @@
         ],
         "routeOnly": false
       },
+      // settings of inbound `protocol` (see above)
       "settings": {
         "auth": "noauth",
-        "udp": true,
-        "allowTransparent": false
+        "udp": true
       }
     }
   ],
+  // client-side outbound configuration
   "outbounds": [
     {
       "tag": "proxy",
       "protocol": "vless",
+      // VLESS settings
       "settings": {
         "vnext": [
           {
+            // IPv4 or IPv6 address of your xray server, or its domain name
             "address": "server_address",
-            "port": 50051,
+            "port": 443,
             "users": [
               {
+                // should match server side
                 "id": "client_id",
-                "alterId": 0,
                 "email": "client_email",
-                "security": "auto",
                 "encryption": "none",
-                "flow": ""
+                "flow": "xtls-rprx-vision"
               }
             ]
           }
         ]
       },
+      // settings of transport protocol, https://xtls.github.io/en/config/transport.html#streamsettingsobject
       "streamSettings": {
-        "network": "grpc",
+        "network": "tcp",
+        // transport layer encription, xtls + fallback
         "security": "reality",
         "realitySettings": {
-          "serverName": "www.yahoo.com",
+          // tls client hello fingerprint; here client appears as chrome to websites
           "fingerprint": "chrome",
+          // fake server name which client is attempting to connect in the TLS handshake
+          "serverName": "www.youtube.com",
+          // optional; if true, outputs debug information
           "show": false,
+          // paired with privateKey from server config
           "publicKey": "public_key",
-          "shortId": "short_id",
-          "spiderX": ""
-        },
-        "grpcSettings": {
-          "serviceName": "",
-          "multiMode": false,
-          "idle_timeout": 60,
-          "health_check_timeout": 20,
-          "permit_without_stream": false,
-          "initial_windows_size": 0
+          // user short id
+          "shortId": "short_id"
         }
-      },
-      "mux": {
-        "enabled": false,
-        "concurrency": -1
       }
     },
     {
+      // this outbound is to guide traffic to local sites not through the server
+      // but directly from the client; `tag` is just a label of oubound
       "tag": "direct",
       "protocol": "freedom",
       "settings": {}
-    },
-    {
-      "tag": "block",
-      "protocol": "blackhole",
-      "settings": {
-        "response": {
-          "type": "http"
-        }
-      }
     }
   ],
+  // Forward each inbound connections to corresponding `outboundTag`. If no rules match,
+  // the traffic is sent out by the first outbound in `outbounds` section.
   "routing": {
     "domainStrategy": "AsIs",
     "rules": [

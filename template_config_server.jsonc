@@ -1,0 +1,100 @@
+// This config is based on
+// https://github.com/XTLS/Xray-examples/blob/main/VLESS-TCP-XTLS-Vision-REALITY/REALITY.ENG.md
+{
+  "log": {
+    "access": "none",
+    "error": "",
+    "loglevel": "warning",
+    "dnsLog": false
+  },
+  // Forward each inbound connections to corresponding `outboundTag`. If no rules match,
+  // the traffic is sent out by the first outbound in `outbounds` section.
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "port": "80",
+        "network": "udp",
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "ip": [
+          // localhost connections
+          "geoip:private"
+        ],
+        "outboundTag": "block"
+      }
+    ]
+  },
+  // server-side inbound configuration
+  "inbounds": [
+    {
+      "listen": "0.0.0.0",
+      "port": 443,
+      "protocol": "vless",
+      // VLESS settings
+      "settings": {
+        "clients": [
+          {
+            // can be generated with `xray uuid`
+            "id": "client_id",
+            // some email; appears in logs
+            "email": "client_email",
+            // Optional; if specified, clients must enable XTLS.
+            // XTLS is Xray's original technology, which doesn't encrypt TLS traffic (which is already encrypted),
+            // providing outstanding performance and no fingerprints of double-encrypted TLS.
+            // XTLS has the same security as TLS.
+            // https://xtls.github.io/en/config/transport.html#streamsettingsobject
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      // settings of transport protocol, https://xtls.github.io/en/config/transport.html#streamsettingsobject
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        // REALITY fallback options; see also https://xtls.github.io/en/config/features/fallback.html
+        "realitySettings": {
+          // optional; if true, outputs debug information
+          "show": false,
+          // with failed authentication VLESS will forward traffic to this address
+          "dest": "www.youtube.com:443",
+          "xver": 0,
+          // required; list of server names which client can provide to the server during the handshake
+          "serverNames": [
+            "www.youtube.com"
+          ],
+          // required; generate with `xray x25519`; use paired publicKey in client configs
+          "privateKey": "private_key",
+          "shortIds": [
+            // required, list of shortIds available to clients, can be used to distinguish different clients
+            "short_id"
+          ]
+        }
+      },
+      // used to make transparent proxies, see https://xtls.github.io/en/config/inbound.html#sniffingobject
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
+    }
+  ],
+  // server-side outbound configuration
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ]
+}
