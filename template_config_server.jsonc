@@ -30,6 +30,7 @@
   },
   // server-side inbound configuration
   "inbounds": [
+    // main inbound, clients connect to it
     {
       "listen": "0.0.0.0",
       "port": 443,
@@ -63,7 +64,68 @@
           // with failed authentication VLESS will forward traffic to this address
           "dest": "www.youtube.com:443",
           "xver": 0,
-          // required; list of server names which client can provide to the server during the handshake
+          // required; list of server names which client can provide to the server during the handshake.
+          // (The internet provider sees "serverName" of client config in the client-server traffic, then a censor
+          // can use this for active probing. Thus, this names should be in accordance with "dest" above.)
+          "serverNames": [
+            "www.youtube.com"
+          ],
+          // required; generate with `xray x25519`; use paired publicKey in client configs
+          "privateKey": "private_key",
+          "shortIds": [
+            // required, list of shortIds available to clients, can be used to distinguish different clients
+            "short_id"
+          ]
+        }
+      },
+      // used to make transparent proxies, see https://xtls.github.io/en/config/inbound.html#sniffingobject
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
+    },
+    // extra inbound; its main purpose is to get fallback to "dest" at port 80. Many regular websites
+    // have open ports 80 (http) and 443 (https).
+    {
+      "listen": "0.0.0.0",
+      "port": 80,
+      "protocol": "vless",
+      // VLESS settings
+      "settings": {
+        "clients": [
+          {
+            // can be generated with `xray uuid`
+            "id": "client_id",
+            // some email; appears in logs
+            "email": "client_email",
+            // Optional; if specified, clients must enable XTLS.
+            // XTLS is Xray's original technology, which doesn't encrypt TLS traffic (which is already encrypted),
+            // providing outstanding performance and no fingerprints of double-encrypted TLS.
+            // XTLS has the same security as TLS.
+            // https://xtls.github.io/en/config/transport.html#streamsettingsobject
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      // settings of transport protocol, https://xtls.github.io/en/config/transport.html#streamsettingsobject
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        // REALITY fallback options; see also https://xtls.github.io/en/config/features/fallback.html
+        "realitySettings": {
+          // optional; if true, outputs debug information
+          "show": false,
+          // with failed authentication VLESS will forward traffic to this address
+          "dest": "www.youtube.com:80",
+          "xver": 0,
+          // required; list of server names which client can provide to the server during the handshake.
+          // (The internet provider sees "serverName" of client config in the client-server traffic, then a censor
+          // can use this for active probing. Thus, this names should be in accordance with "dest" above.)
           "serverNames": [
             "www.youtube.com"
           ],

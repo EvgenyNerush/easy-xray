@@ -135,6 +135,7 @@ and have only ports 80 (http) and 443 (https) open
 (5) www.yahoo.com
 (6) your variant"
             read number
+            default_fake_site="www.youtube.com"
             if [ ! -v $number ]
             then
                 if [ $number -eq 2 ]
@@ -155,34 +156,28 @@ and have only ports 80 (http) and 443 (https) open
                     read fake_site
                     if [ -v $fake_site ]
                     then
-                        fake_site="www.youtube.com"
+                        fake_site=$default_fake_site
                     fi
                 else
-                    fake_site="www.youtube.com"
+                    fake_site=$default_fake_site
                 fi
             else
-                fake_site="www.youtube.com"
+                fake_site=$default_fake_site
             fi
+            server_names="[ \"$fake_site\" ]"
             echo -e "${green}mimic ${fake_site}${normal}"
             email="love@xray.com"
-            clients=" [
-                    {
-                        \"id\": \"${id}\",
-                        \"email\": \"${email}\",
-                        \"flow\": \"xtls-rprx-vision\"
-                    }
-                ]"
-            serverRealitySettings=" {
-                    \"show\": false,
-                    \"dest\": \"${fake_site}:443\",
-                    \"xver\": 0,
-                    \"serverNames\": [ \"${fake_site}\" ],
-                    \"privateKey\": \"${private_key}\",
-                    \"shortIds\": [ \"${short_id}\" ]
-                }"
             # make server config
-            jsonc2json template_config_server.jsonc | jq ".inbounds[].settings.clients=${clients} | .inbounds[].streamSettings.realitySettings=${serverRealitySettings}" > config_server.json
-            # then make the user (not root) an owner of a file
+            jsonc2json template_config_server.jsonc \
+                | jq ".inbounds[].settings.clients[0].id=\"${id}\"
+                    | .inbounds[].settings.clients[0].email=\"${email}\"
+                    | .inbounds[0].streamSettings.realitySettings.dest=\"${fake_site}:443\"
+                    | .inbounds[1].streamSettings.realitySettings.dest=\"${fake_site}:80\"
+                    | .inbounds[].streamSettings.realitySettings.serverNames=${server_names}
+                    | .inbounds[].streamSettings.realitySettings.privateKey=\"${private_key}\"
+                    | .inbounds[].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]" \
+                > config_server.json
+            # then make the user (not root) the owner of the file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
             vnext=" [
                     {
