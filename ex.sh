@@ -74,8 +74,9 @@ then
             then
                 if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
                 then
-                    mkdir -p /var/log/xray
-                    touch /var/log/xray/error.log
+                    dat_dir="/usr/local/share/xray/"
+                    mkdir -p $dat_dir
+                    cp customgeo.dat ${dat_dir}
                     echo -e "${green}xray installed${normal}"
                 else
                     echo -e "${red}xray not installed, something goes wrong${normal}"

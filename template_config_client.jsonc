@@ -94,7 +94,7 @@
     },
     {
       // this outbound is to guide traffic to local sites not through the server
-      // but directly from the client; `tag` is just a label of oubound
+      // but directly from the client; `tag` is just an outbound label
       "tag": "direct",
       "protocol": "freedom",
       "settings": {}
@@ -109,9 +109,21 @@
         "type": "field",
         "domain": [
             "geosite:cn",
+            "domain:cn",
+            // punycode for national Chinese top-level domains .中国, .中國, .公司, .网络
+            "domain:xn--fiqs8s",
+            "domain:xn--fiqz9s",
+            "domain:xn--55qx5d",
+            "domain:xn--io0a7i",
             "domain:ru",
+            // punycode for cyrillic Russian top-level domain .рф
+            "domain:xn--p1ai",
             "domain:by",
-            "domain:ir"
+            // punycode for national Belorussian top-level domain .бел
+            "domain:xn--90ais",
+            "domain:ir",
+            // extra domains that are used by domestic sites
+            "ext:customgeo.dat:coherence-extra"
         ],
         "outboundTag": "direct"
       },

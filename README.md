@@ -12,7 +12,7 @@ so, here is a script which helps to
 
 - install/upgrade/remove XRay and geodata
 - generate credentials and server/client configs
-- (todo) add/delete users to the configs
+- add/delete users to the configs
 
 First, make the script `ex.sh` executable, then run a desired command with it. Use `./ex.sh help` to see the list of all available commands
 and `./ex.sh install` to start interactive prompt which installs and configures XRay.
@@ -38,12 +38,17 @@ proxies which can be used by your Telegram or web browser like this:
 ![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](browser-proxy-settings.png)
 
 Note that there is no additional encryption layer in VLESS; using it you rely on the encryption that the browser (Telegram app etc.) makes.
-Note also that for current client config traffic to .cn, .ru, .by and .ir sites goes directly from the client. This makes your server
-less attention-grabbing, but your connection less anonymous.
+Note also that for current client config, traffic to .cn, .ru, .by and .ir sites goes directly from the client, see
+[here](https://github.com/EvgenyNerush/coherence-grabber) for details. This makes your server much less attention-grabbing and suspicious,
+but your connection less anonymous.
 
 ### Other clients
 
 For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests and config generation for them.
+
+### Futher reading
+
+Template configs contain comments and links and are good start to find another interesting Xray configuration options.
 
 ### Acknowledgements
 
@@ -53,4 +58,3 @@ For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests an
 
 [Configs](https://github.com/XTLS/Xray-examples/tree/main/VLESS-gRPC-REALITY) on which the template configs are based.
 
-(TODO) choose domain names or geoip, configs for phone...
