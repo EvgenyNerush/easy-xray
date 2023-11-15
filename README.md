@@ -57,5 +57,5 @@ Template configs contain comments and links and are good start to find another i
 [XRay config reference](https://xtls.github.io/en/config/) is brilliant and helped me much.
 
 Configs for [gRPC](https://github.com/XTLS/Xray-examples/tree/main/VLESS-gRPC-REALITY)
-[XTLS](https://github.com/XTLS/Xray-examples/tree/main/VLESS-TCP-XTLS-Vision-REALITY) on which the template configs are based.
+and [XTLS](https://github.com/XTLS/Xray-examples/tree/main/VLESS-TCP-XTLS-Vision-REALITY) on that the template configs are based.
 

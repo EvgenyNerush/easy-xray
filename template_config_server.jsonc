@@ -25,6 +25,40 @@
           "geoip:private"
         ],
         "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "protocol": [ "bittorrent" ],
+        "outboundTag": "block"
+      },
+      // block domestic client traffic if it's coming somehow (e.g. wrong client config)
+      {
+        "type": "field",
+        "domain": [
+            "geosite:cn",
+            "domain:cn",
+            "domain:xn--fiqs8s",
+            "domain:xn--fiqz9s",
+            "domain:xn--55qx5d",
+            "domain:xn--io0a7i",
+            "domain:ru",
+            "domain:xn--p1ai",
+            "domain:by",
+            "domain:xn--90ais",
+            "domain:ir",
+            "ext:customgeo.dat:coherence-extra"
+        ],
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "ip": [
+            "geoip:cn",
+            "geoip:ru",
+            "geoip:by",
+            "geoip:ir"
+        ],
+        "outboundTag": "block"
       }
     ]
   },
@@ -150,10 +184,12 @@
   ],
   // server-side outbound configuration
   "outbounds": [
+    // direct connection
     {
       "protocol": "freedom",
       "tag": "direct"
     },
+    // for that should be blocked
     {
       "protocol": "blackhole",
       "tag": "block"
