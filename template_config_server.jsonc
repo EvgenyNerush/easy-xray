@@ -7,11 +7,43 @@
     "loglevel": "warning",
     "dnsLog": false
   },
+  // Turns on traffic statistics, see https://xtls.github.io/en/config/stats.html#statsobject
+  // and https://xtls.github.io/en/config/policy.html#policyobject
+  // and special "api" tag below
+  "stats": {
+  },
+  "policy": {
+    "levels": {
+      // default level
+      "0": {
+        "statsUserUplink": true,
+        "statsUserDownlink": true
+      }
+    },
+    "system": {
+      "statsInboundUplink": true,
+      "statsInboundDownlink": true,
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
+    }
+  },
+  // enables API interface https://xtls.github.io/en/config/api.html#apiobject
+  "api": {
+    "tag": "api",
+    "services": [ "StatsService" ]
+  },
   // Forward each inbound connections to corresponding `outboundTag`. If no rules match,
   // the traffic is sent out by the first outbound in `outbounds` section.
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api"
+      },
       {
         "type": "field",
         "port": "80",
@@ -64,6 +96,16 @@
   },
   // server-side inbound configuration
   "inbounds": [
+    // gRPC API inbound, used to get statistics
+    {
+      "listen": "127.0.0.1",
+      "port": 8080,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "address": "127.0.0.1"
+      },
+      "tag": "api"
+    },
     // main inbound, clients connect to it
     {
       "listen": "0.0.0.0",

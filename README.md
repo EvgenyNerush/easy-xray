@@ -42,6 +42,23 @@ Note also that for current client config, traffic to .cn, .ru, .by and .ir sites
 [here](https://github.com/EvgenyNerush/coherence-grabber) for details. This makes your server much less attention-grabbing and suspicious,
 but your connection less anonymous.
 
+### Statistics
+
+(in bytes)
+
+Client:
+```
+xray api stats --server=127.0.0.1:8080 -name "inbound>>>http>>>traffic>>>downlink"
+xray api stats --server=127.0.0.1:8080 -name "inbound>>>http>>>traffic>>>uplink"
+xray api stats --server=127.0.0.1:8080 -name "inbound>>>socks>>>traffic>>>downlink"
+xray api stats --server=127.0.0.1:8080 -name "inbound>>>socks>>>traffic>>>uplink"
+```
+Server:
+```
+xray api stats --server=127.0.0.1:8080 -name "user>>>[email]>>>traffic>>>uplink"
+xray api stats --server=127.0.0.1:8080 -name "user>>>[email]>>>traffic>>>downlink"
+```
+
 ### Other clients
 
 For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests and config generation for them.

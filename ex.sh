@@ -128,7 +128,7 @@ containing only digits 0-9 and letters a-f, for instance
 Better if it is: hosted by your VPS provider,
 in the same country, it is popular,
 and have only ports 80 (http) and 443 (https) open
-(can check with `nmap -T4 hostname`)
+(can check with nmap -T4 hostname)
 (1) www.youtube.com (default)
 (2) www.microsoft.com
 (3) www.google.com
@@ -170,13 +170,18 @@ and have only ports 80 (http) and 443 (https) open
             email="love@xray.com"
             # make server config
             jsonc2json template_config_server.jsonc \
-                | jq ".inbounds[].settings.clients[0].id=\"${id}\"
-                    | .inbounds[].settings.clients[0].email=\"${email}\"
-                    | .inbounds[0].streamSettings.realitySettings.dest=\"${fake_site}:443\"
-                    | .inbounds[1].streamSettings.realitySettings.dest=\"${fake_site}:80\"
-                    | .inbounds[].streamSettings.realitySettings.serverNames=${server_names}
-                    | .inbounds[].streamSettings.realitySettings.privateKey=\"${private_key}\"
-                    | .inbounds[].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]" \
+                | jq ".inbounds[1].settings.clients[0].id=\"${id}\"
+                    | .inbounds[2].settings.clients[0].id=\"${id}\"
+                    | .inbounds[1].settings.clients[0].email=\"${email}\"
+                    | .inbounds[2].settings.clients[0].email=\"${email}\"
+                    | .inbounds[1].streamSettings.realitySettings.dest=\"${fake_site}:443\"
+                    | .inbounds[2].streamSettings.realitySettings.dest=\"${fake_site}:80\"
+                    | .inbounds[1].streamSettings.realitySettings.serverNames=${server_names}
+                    | .inbounds[2].streamSettings.realitySettings.serverNames=${server_names}
+                    | .inbounds[1].streamSettings.realitySettings.privateKey=\"${private_key}\"
+                    | .inbounds[2].streamSettings.realitySettings.privateKey=\"${private_key}\"
+                    | .inbounds[1].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]
+                    | .inbounds[2].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]" \
                 > config_server.json
             # then make the user (not root) the owner of the file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
@@ -286,7 +291,7 @@ containing only digits 0-9 and letters a-f, for instance
         "
         cp config_server.json config_server.json.backup
         # update server config
-        cat config_server.json.backup | jq ".inbounds[0].settings.clients += [${client}] | .inbounds[0].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > config_server.json
+        cat config_server.json.backup | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > config_server.json
         # then make the user (not root) an owner of a file
         [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
         echo -e "${green}config_client_${username}.json is written,
@@ -317,7 +322,7 @@ then
     short_id=$(jq ".outbounds[0].streamSettings.realitySettings.shortId" $config)
     cp config_server.json config_server.json.backup
     # update server config
-    cat config_server.json.backup | jq "del(.inbounds[0].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[0].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > config_server.json
+    cat config_server.json.backup | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > config_server.json
     # then make the user (not root) an owner of a file
     [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" config_server.json
     rm config_client_${username}.json
