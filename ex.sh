@@ -7,7 +7,7 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 normal='\033[0m'
 
-# strip lines with comments from jsonC
+# delete lines with comments from jsonC
 jsonc2json () {
     if [ ! -v $1 ]
     then
@@ -19,6 +19,60 @@ jsonc2json () {
     fi
 }
 
+# convert string with number of bytes to pretty form
+bytes2MB () {
+    if [ -v $1 ]
+    then
+        echo ""
+    else
+        bytes=$1
+        length=${#bytes}
+        if [ $length -gt 9 ]
+        then
+            head=${bytes::-9}
+            tail=${bytes: -9}
+            echo "${head}.${tail::2} GB"
+        elif [ $length -gt 6 ]
+        then
+            head=${bytes::-6}
+            tail=${bytes: -6}
+            echo "${head}.${tail::2} MB"
+        elif [ $length -gt 3 ]
+        then
+            head=${bytes::-3}
+            tail=${bytes: -3}
+            echo "${head}.${tail::2} kB"
+        else
+            echo "$bytes bytes"
+        fi
+    fi
+}
+
+# drop quotes (") at the start and at the end of a string
+strip_quotes () {
+    if [ -v $1 ] || [ ${#1} -lt 2 ]
+    then
+        echo ""
+    else
+        s=$1
+        s=${s: 1} # from 1 to the end
+        s=${s:: -1}   # from 0 to that is before the last one
+        echo $s
+    fi
+}
+
+# convert json string with statistics to pretty form;
+# (!) use with pipe | to deal with multiline strings correctly
+pretty_stats () {
+    read stats
+    if [ -v "$stats" ]
+    then
+        echo ""
+    else
+        bytes=$(echo $stats | jq ".stat.value")
+        echo "$(bytes2MB $(strip_quotes $bytes))"
+    fi
+}
 
 export PATH=$PATH:/usr/local/bin/ # for sudo user this can be not in PATH
 if command -v xray > /dev/null
@@ -329,6 +383,56 @@ then
         echo -e "${green}config_client_${username}.json is deleted,
 config_server.json is updated${normal}"
 
+elif [ $command = "stats" ]
+then
+    client_stats_proxy_down=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>proxy>>>traffic>>>downlink" 2> /dev/null)
+    server_stats_direct_down=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>downlink" 2> /dev/null)
+    if [ ! -z "$client_stats_proxy_down" ] # output is not a zero string, hence script is running on a client
+    then
+        ## Client statistics ##
+        echo "Downloaded via server: $(echo $client_stats_proxy_down | pretty_stats)"
+        #
+        client_stats_proxy_up=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>proxy>>>traffic>>>uplink" 2> /dev/null)
+        echo "Uploaded via server: $(echo $client_stats_proxy_up | pretty_stats)"
+        #
+        client_stats_direct_down=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>downlink" 2> /dev/null)
+        echo "Downloaded via client directly: $(echo $client_stats_direct_down | pretty_stats)"
+        #
+        client_stats_direct_up=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>uplink" 2> /dev/null)
+        echo "Uploaded via client directly: $(echo $client_stats_direct_up | pretty_stats)"
+    elif [ ! -z "$server_stats_direct_down" ] # output is not a zero string, hence script is running on a server
+    then
+        ## Server statistics ##
+        echo "Downloaded in total: $(echo $server_stats_direct_down | pretty_stats)"
+        #
+        server_stats_direct_up=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>uplink" 2> /dev/null)
+        echo "Uploaded in total: $(echo $server_stats_direct_up | pretty_stats)"
+        #
+        # Per user statistics
+        conf_file="config_server.json" # assuming xray is running with this config
+        qemails=$(cat $conf_file | jq ".inbounds[1].settings.clients[].email")
+        for qemail in ${qemails[@]}
+        do
+            echo ""
+            email=$(strip_quotes $qemail)
+            user_stats_down=$(xray api stats -server=127.0.0.1:8080 -name "user>>>${email}>>>traffic>>>downlink" 2> /dev/null)
+            echo "Downloaded by ${email}: $(echo $user_stats_down | pretty_stats)"
+            user_stats_up=$(xray api stats -server=127.0.0.1:8080 -name "user>>>${email}>>>traffic>>>uplink" 2> /dev/null)
+            echo "Uploaded by ${email}: $(echo $user_stats_up | pretty_stats)"
+        done
+    else
+        echo -e "${red}xray should be running to aquire or reset statistics${normal}"
+        exit 1
+    fi
+    #
+    if [ ! -v $2 ] && [ $2 = "reset" ]
+    then
+        echo ""
+        xray api statsquery -server=127.0.0.1:8080 -reset > /dev/null \
+            && echo -e "${green}statistics reset successfully${normal}" \
+            || echo -e "${red}statistics reset failed${normal}"
+    fi
+
 elif [ $command = "upgrade" ]
 then
     if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
@@ -377,6 +481,8 @@ Here is the list of all available commands:
                     XRay and generate configs for server and client
     ${bold}add ${underl}username${normal}    add user with (any, fake) username to configs
     ${bold}del ${underl}username${normal}    delete user with given username from configs
+    ${bold}stats${normal}           print some traffic statistics
+    ${bold}stats reset${normal}     print statistics then set them to zero
     ${bold}upgrade${normal}         upgrade xray, do not touch configs
     ${bold}remove${normal}          remove xray"
 fi
