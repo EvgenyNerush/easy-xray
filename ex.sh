@@ -56,7 +56,7 @@ strip_quotes () {
     else
         s=$1
         s=${s: 1} # from 1 to the end
-        s=${s:: -1}   # from 0 to that is before the last one
+        s=${s:: -1} # from 0 to that is before the last one
         echo $s
     fi
 }
