@@ -179,16 +179,16 @@ containing only digits 0-9 and letters a-f, for instance
                 fi
             fi
             echo -e "${bold}Choose a fake site to mimic.${normal}
-Better if it is: hosted by your VPS provider,
-in the same country, it is popular,
-and have only ports 80 (http) and 443 (https) open
-(can check with nmap -T4 hostname)
+Better if it is popular and not blocked in your country:
 (1) www.youtube.com (default)
 (2) www.microsoft.com
 (3) www.google.com
 (4) www.bing.com
 (5) www.yahoo.com
-(6) your variant"
+(6) www.adobe.com
+(7) aws.amazon.com
+(8) discord.com
+(9) your variant"
             read number
             default_fake_site="www.youtube.com"
             if [ ! -v $number ]
@@ -206,6 +206,15 @@ and have only ports 80 (http) and 443 (https) open
                 then
                     fake_site="www.yahoo.com"
                 elif [ $number -eq 6 ]
+                then
+                    fake_site="www.adobe.com"
+                elif [ $number -eq 7 ]
+                then
+                    fake_site="aws.amazon.com"
+                elif [ $number -eq 8 ]
+                then
+                    fake_site="discord.com"
+                elif [ $number -eq 9 ]
                 then
                     echo -e "type your variant:"
                     read fake_site
