@@ -42,6 +42,22 @@ Note also that for current client config, traffic to .cn, .ru, .by and .ir sites
 [here](https://github.com/EvgenyNerush/coherence-grabber) for details. This makes your server much less attention-grabbing and suspicious,
 but your connection less anonymous.
 
+### More deep description??
+
+Important: It is assumed that configs are stored and updated
+locally as `config_server.json`, `config_client.json` or
+`config_client_username.json` files. You should manually
+start XRay with one of configs, depending
+which role - server or client - XRay should play:
+```
+    sudo cp config_(role).json /usr/local/etc/xray/config.json
+    sudo systemctl start xray
+```
+or
+```
+    sudo xray run -c config_(role).json
+```
+
 ### Other clients
 
 For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests and config generation for them.
