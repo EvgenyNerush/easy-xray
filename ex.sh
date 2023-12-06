@@ -478,6 +478,11 @@ then
 
 elif [ $command = "del" ]
 then
+    if [ -v $2 ]
+    then
+        echo -e "${red}usernames not set${normal}"
+        exit 1
+    fi
     check_command jq "needed for operations with configs"
     if [ ! -f "./conf/config_server.json" ]
     then
@@ -497,21 +502,49 @@ then
             short_id=$(jq ".outbounds[0].streamSettings.realitySettings.shortId" $config)
             cp ./conf/config_server.json ./conf/tmpconfig.json
             # update server config
-            cat ./conf/tmpconfig.json | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > ./conf/config_server.json
+            ok1=$(cat ./conf/tmpconfig.json | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > ./conf/config_server.json)
             rm ./conf/tmpconfig.json
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_server.json
-            rm config_client_${username}.json
+            ok2=$(rm ./conf/config_client_${username}.json)
+            if $ok1 && $ok2
+            then
                 echo -e "${green}config_client_${username}.json is deleted,
 config_server.json is updated${normal}"
+            else
+                echo -e "${red}something went wrong with username ${username}${normal}"
+            fi
         fi
     done
-    add
-    push
+    echo -e "Copy config to xray's dir and restart xray? (Y/n)"
+    read answer
+    if [ -v $answer ] || [ ${answer::1} != "n" ]
+    then
+        push
+    fi
 
 elif [ $command = "push" ]
 then
     push
+
+elif [ $command = "link" ]
+then
+    conf_file=$2
+    if [ -v $conf_file ]
+    then
+        echo -e "${red}no config is given${normal}"
+        exit 1
+    fi
+    id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
+    address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
+    port=$(jq ".outbounds[0].settings.vnext[0].port" $conf_file)
+    public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
+    server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
+    short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
+    link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
+    echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt as well
+${green}here is your link:${normal}"
+    echo $link
 
 elif [ $command = "stats" ]
 then
@@ -601,12 +634,15 @@ ${green}**** Hi, there! How to use: ****${normal}
 Here is a list of all the commands available:
 
     ${bold}help${normal}            show this message (default)
-    ${bold}install${normal}         run interactive prompt, which asks to download and install
-                    XRay and generate configs
+    ${bold}install${normal}         run interactive prompt, which asks to download and
+                    install XRay, and generates configs
     ${bold}conf${normal}            generate config files for server and clients  
-    ${bold}add ${underl}usernames${normal}   add users with (any, fake) usernames to configs
+    ${bold}add ${underl}usernames${normal}   add users with given usernames to configs,
+                    usernames should by separated by spaces
     ${bold}del ${underl}usernames${normal}   delete users with given usernames from configs
     ${bold}push${normal}            copy config to xray's dir and restarts xray
+    ${bold}link ${underl}config${normal}     convert user config to a link acceptable by
+                    client applications such as Hiddify or V2ray
     ${bold}stats${normal}           print some traffic statistics
     ${bold}stats reset${normal}     print statistics then set them to zero
     ${bold}upgrade${normal}         upgrade xray, do not touch configs
