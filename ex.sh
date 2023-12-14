@@ -2,6 +2,7 @@
 
 # stdout styles
 bold='\033[0;1m'
+italic='\033[0;3m'
 underl='\033[0;4m'
 red='\033[0;31m'
 green='\033[0;32m'
@@ -256,6 +257,7 @@ Better if it is quite popular and not blocked in your country:
         echo -e "${green}config files are generated${normal}"
     else
         echo -e "${red}config files are not generated${normal}"
+        exit 1
     fi
 }
 
@@ -306,7 +308,7 @@ preferably of letters and digits only."
             # make new user config from default user config
             ok1=$(cat ./conf/config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${username}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > ./conf/config_client_${username}.json)
             # then make the user (not root) an owner of a file
-            [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client.json
+            [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_${username}.json
             # update server config
             client="
               {
@@ -315,7 +317,7 @@ preferably of letters and digits only."
                 \"flow\": \"xtls-rprx-vision\"
               }
             "
-            # update server config from backup
+            # update server config
             cp ./conf/config_server.json ./conf/tmpconfig.json
             ok2=$(cat ./conf/tmpconfig.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ./conf/config_server.json)
             rm ./conf/tmpconfig.json
@@ -325,7 +327,7 @@ preferably of letters and digits only."
             then
                 echo -e "${green}config_client_${username}.json is written, config_server.json is updated${normal}"
             else
-                echo -e "${red}something went wrong with username ${username}${normal}"
+                echo -e "${yellow}something went wrong with username ${username}${normal}"
             fi
         fi
     done
@@ -572,7 +574,7 @@ then
         echo "Uploaded in total: $(echo $server_stats_direct_up | pretty_stats)"
         #
         # Per user statistics
-        conf_file="config_server.json" # assuming xray is running with this config
+        conf_file="./conf/config_server.json" # assuming xray is running with this config
         qemails=$(cat $conf_file | jq ".inbounds[1].settings.clients[].email")
         for qemail in ${qemails[@]}
         do
@@ -595,6 +597,65 @@ then
             && echo -e "${green}statistics reset successfully${normal}" \
             || echo -e "${red}statistics reset failed${normal}"
     fi
+
+elif [ $command = "import" ]
+then
+    if [ -v $2 ] || [ -v $3 ]
+    then
+        echo -e "${red}both directories (from and to) should be set${normal}"
+        exit 1
+    fi
+    from=$2
+    to=$3
+    # backup the server and the main client configs
+    cp_to_backup ${to}/config_server.json
+    #
+    configs="${from}/config_client_*.json"
+    for c in $configs
+    do
+        if [ -f $c ]
+        then
+            uname_with_json=$(echo $c | cut -d "_" -f 3-) # remove "config_client_"
+            uname_from_filename=${uname_with_json:: -5} # remove ".json"
+            email=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].email" $c))
+            uname_from_email=${email%@*} # remove "@example.com"
+            if [ $uname_from_filename != $uname_from_email ]
+            then
+                echo -e "${yellow}username ${uname_from_filename} (from filename) inconsistent with username ${uname_from_email} (from email),
+    continue with name from email${normal}"
+            fi
+            if [ -f ${to}/config_client_${uname_from_email}.json ] # username already exists
+            then
+                echo -e "${yellow}username ${uname_from_email} already exists in ${to}, no new config created fot it${normal}"
+            else
+                id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $c))
+                short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $c))
+                # make new user config
+                ok1=$(cat ${to}/config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${uname_from_email}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > ${to}/config_client_${uname_from_email}.json)
+                # then make the user (not root) an owner of a file
+                [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ${to}/config_client_${uname_from_email}.json
+                # update server config
+                client="
+                  {
+                    \"id\": \"${id}\",
+                    \"email\": \"${uname_from_email}@example.com\",
+                    \"flow\": \"xtls-rprx-vision\"
+                  }
+                "
+                cp ${to}/config_server.json ${to}/tmpconfig.json
+                ok2=$(cat ${to}/tmpconfig.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ${to}/config_server.json)
+                rm ${to}/tmpconfig.json
+                # then make the user (not root) an owner of a file
+                [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ${to}/config_server.json
+                if $ok1 && $ok2
+                then
+                    echo -e "${green}${to}/config_client_${uname_from_email}.json is written, config_server.json is updated${normal}"
+                else
+                    echo -e "${yellow}something went wrong with username ${uname_from_email}${normal}"
+                fi
+            fi
+        fi
+    done
 
 elif [ $command = "upgrade" ]
 then
@@ -627,24 +688,32 @@ sudo ./ex.sh push${normal}"
 
 else # "help", default
     echo -e "
-${green}**** Hi, there! How to use: ****${normal}
+${green}**** Hi, there! ****${normal}
+
+The aim of ${italic}easy-xray${normal} is to help to administrate an xray server.
+It's all about ${italic}conf${normal} directory that contains the server config
+${italic}config_server.json${normal}, the main client config ${italic}config_client.json${normal} and
+configs for other users ${italic}config_client_*.json${normal}. How to use it:
 
     ${bold}./ex.sh ${underl}command${normal}
 
 Here is a list of all the commands available:
 
     ${bold}help${normal}            show this message (default)
-    ${bold}install${normal}         run interactive prompt, which asks to download and
-                    install XRay, and generates configs
+    ${bold}install${normal}         run interactive prompt, that asks to download and
+                    install XRay, and to generate configs
     ${bold}conf${normal}            generate config files for server and clients  
     ${bold}add ${underl}usernames${normal}   add users with given usernames to configs,
                     usernames should by separated by spaces
     ${bold}del ${underl}usernames${normal}   delete users with given usernames from configs
-    ${bold}push${normal}            copy config to xray's dir and restarts xray
+    ${bold}push${normal}            copy config to xray's dir and restart xray
     ${bold}link ${underl}config${normal}     convert user config to a link acceptable by
                     client applications such as Hiddify or V2ray
     ${bold}stats${normal}           print some traffic statistics
     ${bold}stats reset${normal}     print statistics then set them to zero
+    ${bold}import ${underl}from${normal} ${underl}to${normal}  import users from one directory that contains
+                    user configs to another directory that contains
+                    server config and the main client config
     ${bold}upgrade${normal}         upgrade xray, do not touch configs
     ${bold}remove${normal}          remove xray"
 fi
