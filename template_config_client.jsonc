@@ -54,7 +54,8 @@
         "destOverride": [
           "http",
           "tls"
-        ]
+        ],
+        "routeOnly": true
       },
       // settings of inbound "protocol" (see above)
       "settings": {
@@ -75,7 +76,7 @@
           "http",
           "tls"
         ],
-        "routeOnly": false
+        "routeOnly": true
       },
       // settings of inbound "protocol" (see above)
       "settings": {

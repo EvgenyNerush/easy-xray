@@ -158,7 +158,8 @@
         "destOverride": [
           "http",
           "tls"
-        ]
+        ],
+        "routeOnly": true
       }
     },
     // extra inbound; its main purpose is to get fallback to "dest" at port 80. Many regular websites
@@ -216,7 +217,8 @@
         "destOverride": [
           "http",
           "tls"
-        ]
+        ],
+        "routeOnly": true
       }
     }
   ],
