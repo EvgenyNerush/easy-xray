@@ -543,7 +543,7 @@ then
     public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
     server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
     short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
-    link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
+    link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
     echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt as well
 ${green}here is your link:${normal}"
     echo $link
@@ -649,7 +649,7 @@ then
                 [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ${to}/config_server.json
                 if $ok1 && $ok2
                 then
-                    echo -e "${green}${to}/config_client_${uname_from_email}.json is written, config_server.json is updated${normal}"
+                    echo -e "${green}${to}/config_client_${uname_from_email}.json is written, ${to}/config_server.json is updated${normal}"
                 else
                     echo -e "${yellow}something went wrong with username ${uname_from_email}${normal}"
                 fi

@@ -1,77 +1,124 @@
 # easy-xray
 
-*Script for Linux which makes XRay installation and configuration easy*
+*Script for Linux which makes XRay management easy*
 
 (todo) [Readme in Russian](README.ru.md)
 
 (todo) [Readme in Chinese](README.cn.md)
 
-[XRay (aka ProjectX)](https://xtls.github.io/en/) is a frontier solution to surpass the internet censorship. It can work as a server and as
-a client allowing to guide traffic through a VPS outside the region of censorship. XRay configuration can be confusing for a newcomer,
-so, here is a script which helps to
+[XRay (aka ProjectX)](https://xtls.github.io/en/) is a frontier solution to circumvent the internet censorship. XRay allows to guide traffic
+through a server (VPS) outside the region of censorship as a proxie, but connection to xray server looks for authorities as a typical
+connection to a regular website. Attempts to detect VPN such as [active probing](https://ensa.fi/active-probing/) or blocking by the rule
+"all except https" are eliminated by XRay.  Also, XRay server can be configured to open only foreign websites, thus preventing detection by
+the code on domestic websites.  As a proxy, XRay has no need to encrypt already encrypted https traffic, hence CPU load is low. XRay doesn't
+need to keep the connection alive, and users don't need to manually reconnect to it time-to-time. Also users don't need to turn a client off
+to go to most domestic websites.
 
-- install/upgrade/remove XRay and geodata
+![xray-schematic: traffic to foreign websites goes through vps, traffic to domestic sites goes directly from pc](figs/xray-schematic.png)
+
+Besides of its plusses, configuration and management of XRay server is quite sophisticated. So, here is a script which helps to do it. It
+can
+
+- install/upgrade/remove XRay
 - generate credentials and server/client configs
 - add/delete users to the configs
+- and more
 
-First, make the script `ex.sh` executable, then run a desired command with it. Use `./ex.sh help` to see the list of all available commands
-and `./ex.sh install` to start interactive prompt which installs and configures XRay.
+### How to use on VPS
+
+First you need a Linux server (VPS) with [jq](https://jqlang.github.io/jq/) and `openssl` installed, they can be found in repositories of
+almost all popular Linux distributions. Then download whole `easy-xray` folder to the VPS, make the script `ex.sh` executable, and run a
+desired command with it. Use `./ex.sh help` to see the list of all available commands and `./ex.sh install` to start interactive prompt
+that installs and configures XRay.
+
 ```
 $ chmod +x ex.sh
 $ ./ex.sh help
 $ sudo ./ex.sh install
 ```
 
-### Prerequisites
+Now you have `conf` folder with server and client configs and some user configs. Server config is properly installed and XRay is running.
+Time to share configs or *links* with users! To generate config in the link form, use `./ex.sh link user_config_file.json`.
 
-For manipulations with configs, [jq](https://jqlang.github.io/jq/) is needed, it can be found in repositories of almost all popular Linux
-distributions.
+### Clients
 
-### How it works
+#### Linux
 
-With current configs, XRay creates a tunnel between the client (your laptop, phone etc.) and the server (your VPS). The tunnel uses VLESS
-[Reality](https://github.com/XTLS/REALITY/blob/main/README.en.md) protocol that obfuscates traffic and in our case imitates
-[grpc](https://en.wikipedia.org/wiki/GRPC). For the censor the tunnel looks like a usual connection to a site. The server responds to https
-requests as some popular site thus it is not suspicious for an active probing. On the client side *XRay* creates http/https and socks
-proxies which can be used by your Telegram or web browser like this:
+XRay itself can be a client, besides plenty of GUI clients that are available for other popular operating systems (see below). You can
+manually install XRay with [official script](https://github.com/XTLS/Xray-install) and manually copy `customgeo.dat` to
+`/usr/local/share/xray/` or just install them both with `sudo ./ex.sh install` command. Then, copy client config from the server and run one
+of these:
 
-![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](browser-proxy-settings.png)
-
-Note that there is no additional encryption layer in VLESS; using it you rely on the encryption that the browser (Telegram app etc.) makes.
-Note also that for current client config, traffic to .cn, .ru, .by and .ir sites goes directly from the client, see
-[here](https://github.com/EvgenyNerush/coherence-grabber) for details. This makes your server much less attention-grabbing and suspicious,
-but your connection less anonymous.
-
-### More deep description??
-
-Important: It is assumed that configs are stored and updated
-locally as `config_server.json`, `config_client.json` or
-`config_client_username.json` files. You should manually
-start XRay with one of configs, depending
-which role - server or client - XRay should play:
 ```
-    sudo cp config_(role).json /usr/local/etc/xray/config.json
+    sudo cp config_client_username.json /usr/local/etc/xray/config.json
     sudo systemctl start xray
 ```
+
 or
+
 ```
-    sudo xray run -c config_(role).json
+    sudo xray run -c config_client_username.json
 ```
 
-### Other clients
+In the current configuration, on the client side XRay creates http/https and socks5 proxies on your PC which can be used by your Telegram
+app or Web browser like this:
 
-For Windows, MacOS or Android you can try Nekobox, v2rayNG or ? (TODO): tests and config generation for them.
+![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](figs/browser-proxy-settings.png)
+
+To check that traffic to domestic and foreing sites goes by different ways, visit, for example,
+[whatismyip.com](https://www.whatismyip.com/) and [2ip.ru](https://2ip.ru/). They should show different IP addressess.
+
+#### Windows
+
+Use [Nekoray (Nekobox)](https://github.com/MatsuriDayo/nekoray) client that releases can be found on [this
+page](https://github.com/MatsuriDayo/nekoray/releases). Choose one of Assets, for instance `nekoray-3.26-2023-12-09-windows64.zip`, download
+then unzip it and run Nekoray. The following configuration is [quite easy (RU)](Nekoray.ru.md).
+
+#### MacOS
+
+Use XRay:
+
+```
+brew install xray
+cp customgeo.dat /usr/local/share/xray/ # not yet tested
+sudo xray -config=config_client_username.json
+```
+
+#### Android
+
+For many mobile applications it is enough to paste a client config in a link form from the buffer, and add customgeo in an appropriate form
+(see `misc` dir) to somethere like `Settings/Routing/Custom rules/Direct URL`. Tested applications are listed below.
+
+Use [V2RayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang&pcampaignid=web_share),
+[HiddifyNG](https://play.google.com/store/apps/details?id=ang.hiddify.com&pcampaignid=web_share) or [Hiddify
+Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=web_share). They are very similar to each other, here are
+some instructions for [V2RayNG (RU)](V2RayNG.ru.md) and [HiddifyNG (EN)](HiddifyNG.en.md).
+
+#### iOS
+
+Use [Straisand](https://apps.apple.com/us/app/streisand/id6450534064). Its configuration is very similar to that of V2Ray and Hiddify (see
+above). Manual copy-paste from json config file is also possible. (customgeo not yet tested)
+
+#### Others
+
+[Here](https://github.com/xtls/xray-core) you can find an additional list of clients.
+
+### Tor
+
+Most of GUI clients are based on xray core, but do not fully support its configuration, that is crutial for Tor. To use
+[TorBrowser](https://www.torproject.org/download/) in this case, use bridges. To get a bridge, send a letter to bridges@torproject.org, then
+copy symbols after `obfs4` and paste them to TorBrowser bridge settings.
 
 ### Futher reading
 
-Template configs contain comments and links and are good start to find another interesting Xray configuration options.
+Template configs contain comments and links and are a good start to find another interesting Xray configuration options.
 
-### Acknowledgements
+See [this link](https://github.com/EvgenyNerush/coherence-grabber) for details on how `customgeo` files are generated.
 
-[This article (in Russian)](https://habr.com/ru/articles/731608/) helped me to install *XRay* for the first time.
+[This article (in Russian)](https://habr.com/ru/articles/731608/) helped me to install XRay for the first time.
+
+The template configs are based on these [gRPC](https://github.com/XTLS/Xray-examples/tree/main/VLESS-gRPC-REALITY)
+and [XTLS](https://github.com/XTLS/Xray-examples/tree/main/VLESS-TCP-XTLS-Vision-REALITY) examples.
 
 [XRay config reference](https://xtls.github.io/en/config/) is brilliant and helped me much.
-
-Configs for [gRPC](https://github.com/XTLS/Xray-examples/tree/main/VLESS-gRPC-REALITY)
-and [XTLS](https://github.com/XTLS/Xray-examples/tree/main/VLESS-TCP-XTLS-Vision-REALITY) on that the template configs are based.
 
