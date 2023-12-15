@@ -32,9 +32,9 @@ desired command with it. Use `./ex.sh help` to see the list of all available com
 that installs and configures XRay.
 
 ```
-$ chmod +x ex.sh
-$ ./ex.sh help
-$ sudo ./ex.sh install
+chmod +x ex.sh
+./ex.sh help
+sudo ./ex.sh install
 ```
 
 Now you have `conf` folder with server and client configs and some user configs. Server config is properly installed and XRay is running.
@@ -46,18 +46,17 @@ Time to share configs or *links* with users! To generate config in the link form
 
 XRay itself can be a client, besides plenty of GUI clients that are available for other popular operating systems (see below). You can
 manually install XRay with [official script](https://github.com/XTLS/Xray-install) and manually copy `customgeo.dat` to
-`/usr/local/share/xray/` or just install them both with `sudo ./ex.sh install` command. Then, copy client config from the server and run one
-of these:
+`/usr/local/share/xray/` or just install them both with `sudo ./ex.sh install` command. Then, copy client config from the server and run:
 
 ```
-    sudo cp config_client_username.json /usr/local/etc/xray/config.json
-    sudo systemctl start xray
+sudo cp config_client_username.json /usr/local/etc/xray/config.json
+sudo systemctl start xray
 ```
 
 or
 
 ```
-    sudo xray run -c config_client_username.json
+sudo xray run -c config_client_username.json
 ```
 
 In the current configuration, on the client side XRay creates http/https and socks5 proxies on your PC which can be used by your Telegram
@@ -108,6 +107,10 @@ above). Manual copy-paste from json config file is also possible. (customgeo not
 Most of GUI clients are based on xray core, but do not fully support its configuration, that is crutial for Tor. To use
 [TorBrowser](https://www.torproject.org/download/) in this case, use bridges. To get a bridge, send a letter to bridges@torproject.org, then
 copy symbols after `obfs4` and paste them to TorBrowser bridge settings.
+
+### Bittorrent
+
+Bittorent protocol is blocked in the current configuration. Using bittorent on a VPS can lead to a ban from VPS provider.
 
 ### Futher reading
 
