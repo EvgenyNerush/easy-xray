@@ -112,7 +112,22 @@ copy symbols after `obfs4` and paste them to TorBrowser bridge settings.
 
 Bittorent protocol is blocked in the current configuration. Using bittorent on a VPS can lead to a ban from VPS provider.
 
-### Futher reading
+### What else
+
+#### Hints
+
+To choose a good `serverName` (your VPS will mimic this website), you can use [RealiTLScanner](https://github.com/XTLS/RealiTLScanner). This
+tool scans ip addresses near your server (do it not from your VPS!) and show names found at port 443. With `nmap -T4 hostname` you can check
+that only ports 80 and 443 are open on hosts of the found websites (as in the configurations of template configs). It is also good to move
+ssh on your VPS to a port beyond 1024. It can be done in `/etc/ssh/sshd_config`. Check twice that VPS is available at your new port before
+you comment Port 22!
+
+```
+#Port 22
+Port 43210
+```
+
+#### Links
 
 Template configs contain comments and links and are a good start to find another interesting Xray configuration options.
 
