@@ -7,8 +7,42 @@
     "loglevel": "warning",
     "dnsLog": false
   },
+  // Turns on traffic statistics, see https://xtls.github.io/en/config/stats.html#statsobject
+  // and https://xtls.github.io/en/config/policy.html#policyobject
+  // and special "api" tag below
+  "stats": {
+  },
+  "policy": {
+    "levels": {
+      // default level
+      "0": {
+        "statsUserUplink": true,
+        "statsUserDownlink": true
+      }
+    },
+    "system": {
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
+    }
+  },
+  // enables API interface https://xtls.github.io/en/config/api.html#apiobject
+  "api": {
+    "tag": "api",
+    "services": [ "StatsService" ]
+  },
   // client-side inbound configuration
   "inbounds": [
+    // gRPC API inbound, used to get statistics
+    {
+      "listen": "127.0.0.1",
+      "port": 8080,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "address": "127.0.0.1"
+      },
+      "tag": "api"
+    },
+    // socks proxy
     {
       "tag": "socks",
       "port": 800,
@@ -20,14 +54,16 @@
         "destOverride": [
           "http",
           "tls"
-        ]
+        ],
+        "routeOnly": true
       },
-      // settings of inbound `protocol` (see above)
+      // settings of inbound "protocol" (see above)
       "settings": {
         "auth": "noauth",
         "udp": true
       }
     },
+    // http/https proxy
     {
       "tag": "http",
       "port": 801,
@@ -40,9 +76,9 @@
           "http",
           "tls"
         ],
-        "routeOnly": false
+        "routeOnly": true
       },
-      // settings of inbound `protocol` (see above)
+      // settings of inbound "protocol" (see above)
       "settings": {
         "auth": "noauth",
         "udp": true
@@ -105,6 +141,13 @@
   "routing": {
     "domainStrategy": "AsIs",
     "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api"
+      },
       {
         "type": "field",
         "domain": [
