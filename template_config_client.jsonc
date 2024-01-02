@@ -87,6 +87,7 @@
   ],
   // client-side outbound configuration
   "outbounds": [
+    // fallback, see `routing` section
     {
       "tag": "proxy",
       "protocol": "vless",
@@ -134,6 +135,11 @@
       "tag": "direct",
       "protocol": "freedom",
       "settings": {}
+    },
+    // for that should be blocked
+    {
+      "protocol": "blackhole",
+      "tag": "block"
     }
   ],
   // Forward each inbound connections to corresponding `outboundTag`. If no rules match,
@@ -148,6 +154,25 @@
         ],
         "outboundTag": "api"
       },
+      {
+        "type": "field",
+        "protocol": [ "bittorrent" ],
+        "outboundTag": "block"
+      },
+      // block traffic to popular ports of torrent trackers
+      // and to popular ports of torrent clients
+      {
+        "type": "field",
+        "port": "6969,6881-6889",
+        "outboundTag": "block"
+      },
+      // block traffic from popular ports of torrent clients
+      {
+        "type": "field",
+        "sourcePort": "6881-6889",
+        "outboundTag": "block"
+      },
+      // guide domestic sites traffic to `direct` outbound
       {
         "type": "field",
         "domain": [
@@ -179,11 +204,6 @@
             "geoip:ir"
         ],
         "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "protocol": [ "bittorrent" ],
-        "outboundTag": "block"
       }
     ]
   }

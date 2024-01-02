@@ -44,7 +44,6 @@
       },
       {
         "type": "field",
-        "port": "80",
         "network": "udp",
         "outboundTag": "block"
       },
@@ -61,21 +60,38 @@
         "protocol": [ "bittorrent" ],
         "outboundTag": "block"
       },
+      // block traffic to popular ports of torrent trackers
+      // and to popular ports of torrent clients
+      {
+        "type": "field",
+        "port": "6969,6881-6889",
+        "outboundTag": "block"
+      },
+      // block traffic from popular ports of torrent clients
+      {
+        "type": "field",
+        "sourcePort": "6881-6889",
+        "outboundTag": "block"
+      },
       // block domestic client traffic if it's coming somehow (e.g. wrong client config)
       {
         "type": "field",
         "domain": [
             "geosite:cn",
             "domain:cn",
+            // punycode for national Chinese top-level domains .中国, .中國, .公司, .网络
             "domain:xn--fiqs8s",
             "domain:xn--fiqz9s",
             "domain:xn--55qx5d",
             "domain:xn--io0a7i",
             "domain:ru",
+            // punycode for cyrillic Russian top-level domain .рф
             "domain:xn--p1ai",
             "domain:by",
+            // punycode for national Belorussian top-level domain .бел
             "domain:xn--90ais",
             "domain:ir",
+            // extra domains that are used by domestic sites, see https://github.com/EvgenyNerush/coherence-grabber/tree/main
             "ext:customgeo.dat:coherence-extra"
         ],
         "outboundTag": "block"
@@ -224,7 +240,7 @@
   ],
   // server-side outbound configuration
   "outbounds": [
-    // direct connection
+    // direct connection; fallback, see `routing` section
     {
       "protocol": "freedom",
       "tag": "direct"
