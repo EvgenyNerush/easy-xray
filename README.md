@@ -24,6 +24,8 @@ can
 
 ### How to use on VPS
 
+#### Linux
+
 First you need a Linux server (VPS) with [jq](https://jqlang.github.io/jq/) and `openssl` installed, they can be found in repositories of
 almost all popular Linux distributions. Then download whole `easy-xray` folder to the VPS, make the script `ex.sh` executable, and run a
 desired command with it. Use `./ex.sh help` to see the list of all available commands and `./ex.sh install` to start interactive prompt
@@ -37,6 +39,55 @@ sudo ./ex.sh install
 
 Now you have `conf` folder with server and client configs and some user configs. Server config is properly installed and XRay is running.
 Time to share configs or *links* with users! To generate config in the link form, use `./ex.sh link user_config_file.json`.
+
+#### Docker
+
+Script `ex.sh` is written without Docker in mind, but can be used with Docker. Download `easy-xray` folder (main branch) and build the
+Docker image from `Dockerfile` with some tag name (-t, say `ximage`):
+
+```
+curl -L https://codeload.github.com/EvgenyNerush/easy-xray/tar.gz/main | tar -xz
+cd easy-xray-main # note `-main` !!
+docker build -t ximage ./
+```
+
+Usually user applications are not allowed to bind port 1024 and below, and to mimic a real website xray server should be on ports 80 and
+443. Thus allow user applications to use ports from 80 and above:
+
+```
+sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
+```
+
+Enable *linger mode* that allows a not-logged user to run long-running services. Otherwise container can come to improper state after your
+logout:
+
+```
+sudo loginctl enable-linger your_username
+```
+
+Then run docker container in interactive mode (`-i -t`) exposing ports 80 and 443 to the ports of the host:
+
+```
+docker run -it --name xcontainer -p 80:80 -p 443:443 ximage
+```
+
+In the shell of the container install and configure xray. Ignore all warnings about systemd and don't copy configs and don't restart xray.
+Start xray with generated server config explicitly:
+
+```
+./ex.sh install
+xray -c conf/config_server.json
+```
+
+Detach from the container with *Ctrl+p then Ctrl+q*. If you need to attach container again, use `docker attach xcontainer` with *Ctrl+c* to
+stop xray running, or use `docker exec -it xcontainer bash`. To copy config files from the container to the host, first get container Id:
+
+```
+docker ps -a
+docker cp 123abc456def:/easy-xray/conf ./
+```
+
+Command `./ex.sh link conf_file` can be used on any conputer there config files are stored.
 
 ### Clients
 
