@@ -537,6 +537,12 @@ then
         echo -e "${red}no config is given${normal}"
         exit 1
     fi
+    if [ ! -f $conf_file ]
+    then
+        echo -e "${red}file ${conf_file} does not exist${normal}"
+        exit 1
+    fi
+    check_command jq "needed for operations with configs"
     id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
     address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
     port=$(jq ".outbounds[0].settings.vnext[0].port" $conf_file)
@@ -544,7 +550,7 @@ then
     server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
     short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
     link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
-    echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt as well
+    echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt or misc/customgeo4nekoray.txt as well
 ${green}here is your link:${normal}"
     echo $link
 
