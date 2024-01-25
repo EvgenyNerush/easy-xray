@@ -154,8 +154,8 @@ above). Manual copy-paste from json config file is also possible. (customgeo not
 ### Tor
 
 Most of GUI clients are based on xray core, but do not fully support its configuration, that is crutial for Tor. To use
-[TorBrowser](https://www.torproject.org/download/) in this case, use bridges. To get a bridge, send a letter to bridges@torproject.org, then
-copy symbols after `obfs4` and paste them to TorBrowser bridge settings.
+[TorBrowser](https://www.torproject.org/download/) in this case, use bridges. To turn on a bridge, go to Settings/Connection, then to
+Bridges section and choose a built-in obfs4 bridge.
 
 ### Bittorrent
 
