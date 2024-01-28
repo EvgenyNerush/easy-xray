@@ -191,7 +191,8 @@
             "domain:xn--90ais",
             "domain:ir",
             // extra domains that are used by domestic sites, see https://github.com/EvgenyNerush/coherence-grabber/tree/main
-            "ext:customgeo.dat:coherence-extra"
+            "ext:customgeo.dat:coherence-extra",
+            "ext:customgeo.dat:coherence-extra-plus"
         ],
         "outboundTag": "direct"
       },

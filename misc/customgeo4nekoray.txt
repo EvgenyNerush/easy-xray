@@ -9,12 +9,10 @@ domain:xn--p1ai
 domain:by
 domain:xn--90ais
 domain:ir
-domain:habr.com
-domain:habrastorage.org
+domain:yandex.net
+domain:yastatic.net
 domain:lenta.com
 domain:gldn.net
-domain:yastatic.net
-domain:yandex.net
 domain:mycdn.me
 domain:avito.st
 domain:gismeteo.st
@@ -87,3 +85,10 @@ domain:chuimg.com
 domain:autonavi.com
 domain:amap.com
 domain:mmstat.com
+domain:googleapis.com
+domain:mozilla.com
+domain:microsoft.com
+domain:apple.com
+domain:habr.com
+domain:habrastorage.org
+domain:viqeo.tv
