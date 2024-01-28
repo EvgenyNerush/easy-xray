@@ -1,7 +1,8 @@
 [Релизы Nekoray (см. Assets)](https://github.com/MatsuriDayo/nekoray/releases)
 
-Выбираем ядро xray, добавляем профиль (конфиг-ссылка), настраиваем маршруты (копируем из `misc/customgeo4nekoray.txt`), выбираем режим
-системного прокси, и запускаем!
+Выбираем ядро xray, добавляем профиль (конфиг-ссылка), настраиваем маршруты (копируем из
+[misc/customgeo4nekoray.txt](https://github.com/EvgenyNerush/easy-xray/blob/main/misc/customgeo4nekoray.txt)), выбираем режим системного
+прокси, и запускаем! Если nekoray не используется, выключите в Панели управления Windows слайдер "Использовать системный прокси".
 
 ![](figs/nekoray-1.jpg)
 
