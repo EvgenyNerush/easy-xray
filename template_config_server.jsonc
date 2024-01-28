@@ -42,19 +42,21 @@
         ],
         "outboundTag": "api"
       },
+      // guide udp traffic to `block` outbound
       {
         "type": "field",
         "network": "udp",
         "outboundTag": "block"
       },
+      // block localhost connections through xray
       {
         "type": "field",
         "ip": [
-          // localhost connections
           "geoip:private"
         ],
         "outboundTag": "block"
       },
+      // guide bittorent traffic to `block` outbound
       {
         "type": "field",
         "protocol": [ "bittorrent" ],

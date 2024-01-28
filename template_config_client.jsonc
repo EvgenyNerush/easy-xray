@@ -154,23 +154,38 @@
         ],
         "outboundTag": "api"
       },
+      // guide udp traffic to `direct` outbound
+      {
+        "type": "field",
+        "network": "udp",
+        "outboundTag": "direct"
+      },
+      // block localhost connections through xray
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "block"
+      },
+      // guide bittorent traffic to `direct` outbound
       {
         "type": "field",
         "protocol": [ "bittorrent" ],
-        "outboundTag": "block"
+        "outboundTag": "direct"
       },
-      // block traffic to popular ports of torrent trackers
+      // traffic to popular ports of torrent trackers
       // and to popular ports of torrent clients
       {
         "type": "field",
         "port": "6969,6881-6889",
-        "outboundTag": "block"
+        "outboundTag": "direct"
       },
-      // block traffic from popular ports of torrent clients
+      // traffic from popular ports of torrent clients
       {
         "type": "field",
         "sourcePort": "6881-6889",
-        "outboundTag": "block"
+        "outboundTag": "direct"
       },
       // guide domestic sites traffic to `direct` outbound
       {
