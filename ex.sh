@@ -545,6 +545,10 @@ then
     check_command jq "needed for operations with configs"
     id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
     address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
+    if [[ $address == *":"* ]] # address contains ':', as IPv6 does
+    then
+        address="[${address}]"
+    fi
     port=$(jq ".outbounds[0].settings.vnext[0].port" $conf_file)
     public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
     server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
