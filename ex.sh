@@ -145,9 +145,21 @@ conf () {
         exit 1
     fi
     id=$(xray uuid) # random uuid for VLESS
-    keys=$(xray x25519) # string "Private key: Abc... Public key: Xyz..."
-    private_key=$(echo $keys | cut -d " " -f 3) # get 3rd field of fields delimited by spaces
-    public_key=$(echo $keys | cut -d " " -f 6) # get 6th field
+    echo -e "Generate private and public keys? (Y/n)"
+    read answer
+    if [ ! -v $answer ] && [ $answer = 'n' ]
+    then
+        echo -e "Enter private and public keys delimited by a space:"
+        read answer
+        private_key=$(echo $answer | cut -d " " -f 1) # get the first field of fields delimited by spaces
+        public_key=$(echo $answer | cut -d " " -f 2)
+    fi
+    if [ -v $private_key ] || [ -v $public_key ]
+    then
+        keys=$(xray x25519) # string "Private key: Abc... Public key: Xyz..."
+        private_key=$(echo $keys | cut -d " " -f 3) # get 3rd field of fields delimited by spaces
+        public_key=$(echo $keys | cut -d " " -f 6) # get 6th field
+    fi
     short_id=$(openssl rand -hex 8) # random short_id for REALITY
     #
     echo -e "Choose a fake site to mimic.
