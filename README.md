@@ -144,8 +144,8 @@ some instructions for [V2RayNG (RU)](V2RayNG.ru.md) and [HiddifyNG (EN)](Hiddify
 
 #### iOS
 
-Use [Straisand](https://apps.apple.com/us/app/streisand/id6450534064). Its configuration is very similar to that of V2Ray and Hiddify (see
-above). Manual copy-paste from json config file is also possible. (customgeo not yet tested)
+Use [Straisand](https://apps.apple.com/us/app/streisand/id6450534064). Its configuration is very similar to that of V2Ray and Hiddify, here
+is the [instruction for Straisand](Straisand.md).
 
 #### Others
 
