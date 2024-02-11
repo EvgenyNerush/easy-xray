@@ -93,9 +93,10 @@ Command `./ex.sh link conf_file` can be used on any conputer there config files 
 
 #### Linux
 
-XRay itself can be a client, besides plenty of GUI clients that are available for other popular operating systems (see below). You can
-manually install XRay with [official script](https://github.com/XTLS/Xray-install) and manually copy `customgeo.dat` to
-`/usr/local/share/xray/` or just install them both with `sudo ./ex.sh install` command. Then, copy client config from the server and run:
+XRay itself can be a client, besides plenty of GUI clients that are available for Linux (Nekoray,..) and other popular operating systems
+(see below). You can manually install XRay with [official script](https://github.com/XTLS/Xray-install) and manually copy `customgeo.dat` to
+`/usr/local/share/xray/` or just install xray and customgeo file with `sudo ./ex.sh install` command. Then, copy client config from the
+server and run:
 
 ```
 sudo cp config_client_username.json /usr/local/etc/xray/config.json
@@ -118,9 +119,15 @@ To check that traffic to domestic and foreing sites goes by different ways, visi
 
 #### Windows
 
-Use [Nekoray (Nekobox)](https://github.com/MatsuriDayo/nekoray) client that releases can be found on [this
+For Windows GUI clients such as *v2rayN* or *nekoray (nekobox)* can be used.
+
+[V2rayN](https://github.com/2dust/v2rayN/) releases can be found [here](https://github.com/2dust/v2rayN/releases). Download asset with core,
+say `v2rayN-With-Core.zip`, unzip, then start. Here is a [graphical instruction for v2rayN](V2RayN.ru.md) (in Russian).
+
+[Nekoray (nekobox)](https://github.com/MatsuriDayo/nekoray) releases can be found on [this
 page](https://github.com/MatsuriDayo/nekoray/releases). Choose one of Assets, for instance `nekoray-3.26-2023-12-09-windows64.zip`, download
-then unzip it and run Nekoray. The following configuration is [quite easy (RU)](Nekoray.ru.md).
+then unzip it and run Nekoray. Here is a [graphical instruction (in Russian)](Nekoray.ru.md). Try TUN regime in the case of problems; use
+task manager to kill it.
 
 #### MacOS
 
