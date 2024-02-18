@@ -102,10 +102,10 @@ docker cp 123abc456def:/easy-xray/conf ./
 
 #### Linux
 
-Для подключения к XRay-серверу существуют клиенты с графическим интерфейсом (Nekoray,..), но о них чуть позже. На Linux удобно использовать сам XRay в
-качестве клиента.  XRay можно установить вручную, используя [официальный скрипт](https://github.com/XTLS/Xray-install), после чего
-скопировать `customgeo.dat` в `/usr/local/share/xray/`. Другой вариант установить XRay и `customgeo.dat` - воспользоваться командой `sudo
-./ex.sh install`. Затем нужно скопировать клиентский конфиг с сервера и выполнить
+Для подключения к XRay-серверу существуют клиенты с графическим интерфейсом (Nekoray, v2rayA,..), но о них чуть позже. На Linux удобно
+использовать сам XRay в качестве клиента.  XRay можно установить вручную, используя [официальный
+скрипт](https://github.com/XTLS/Xray-install), после чего скопировать `customgeo.dat` в `/usr/local/share/xray/`. Другой вариант установить
+XRay и `customgeo.dat` - воспользоваться командой `sudo ./ex.sh install`. Затем нужно скопировать клиентский конфиг с сервера и выполнить
 
 ```
 sudo cp config_client_username.json /usr/local/etc/xray/config.json
@@ -128,9 +128,12 @@ XRay с текущим клиентским конфигом создаёт ло
 
 #### Windows
 
-На Windows обычно используют клиенты с графическим интерфейсом - *v2rayN* и *nekoray (nekobox)*. Инструкции для них доступны по ссылкам:
+На Windows обычно используют клиенты с графическим интерфейсом - *v2rayN*, *v2rayA* и *nekoray (nekobox)*. Инструкции для них доступны по
+ссылкам:
 
 [v2rayN](V2RayN.ru.md)
+
+[v2rayA](V2RayA.ru.md)
 
 [nekoray](Nekoray.ru.md).
 
@@ -143,6 +146,9 @@ brew install xray
 cp customgeo.dat /usr/local/share/xray/ # not yet tested
 sudo xray -config=config_client_username.json
 ```
+
+В качестве альтернативы можно использовать *v2rayA*. Это приложение имеет веб интерфейс, доступный в браузере по адресу localhost:2017.
+Детальные инструкции для v2rayA можно найти [здесь](V2RayA.ru.md).
 
 #### Android
 
@@ -159,6 +165,10 @@ Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=
 
 Используйте [Straisand](https://apps.apple.com/us/app/streisand/id6450534064). Конфигурирование аналогично тому, что описано для V2Ray или
 Hiddify, здесь [инструкция для Straisand](Straisand.ru.md).
+
+#### OpenWRT
+
+Используйте *v2rayA*. Инструкция [здесь](V2RayA.ru.md).
 
 #### Другие
 

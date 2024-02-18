@@ -93,10 +93,10 @@ Command `./ex.sh link conf_file` can be used on any conputer there config files 
 
 #### Linux
 
-XRay itself can be a client, besides plenty of GUI clients that are available for Linux (Nekoray,..) and other popular operating systems
-(see below). You can manually install XRay with [official script](https://github.com/XTLS/Xray-install) and manually copy `customgeo.dat` to
-`/usr/local/share/xray/` or just install xray and customgeo file with `sudo ./ex.sh install` command. Then, copy client config from the
-server and run:
+XRay itself can be a client, besides plenty of GUI clients that are available for Linux (Nekoray, v2rayA,..) and other popular operating
+systems (see below). You can manually install XRay with [official script](https://github.com/XTLS/Xray-install) and manually copy
+`customgeo.dat` to `/usr/local/share/xray/` or just install xray and customgeo file with `sudo ./ex.sh install` command. Then, copy client
+config from the server and run:
 
 ```
 sudo cp config_client_username.json /usr/local/etc/xray/config.json
@@ -119,10 +119,13 @@ To check that traffic to domestic and foreing sites goes by different ways, visi
 
 #### Windows
 
-For Windows GUI clients such as *v2rayN* or *nekoray (nekobox)* can be used.
+For Windows GUI clients such as *v2rayN*, *v2rayA* or *nekoray (nekobox)* can be used.
 
 [V2rayN](https://github.com/2dust/v2rayN/) releases can be found [here](https://github.com/2dust/v2rayN/releases). Download asset with core,
 say `v2rayN-With-Core.zip`, unzip, then start. Here is a [graphical instruction for v2rayN](V2RayN.ru.md) (in Russian).
+
+Detailed instruction for v2rayA can be found [here](V2RayA.ru.md) (in Russian). For short, v2rayA creates a server, and its interface is
+available at localhost:2017 in the browser.
 
 [Nekoray (nekobox)](https://github.com/MatsuriDayo/nekoray) releases can be found on [this
 page](https://github.com/MatsuriDayo/nekoray/releases). Choose one of Assets, for instance `nekoray-3.26-2023-12-09-windows64.zip`, download
@@ -139,6 +142,9 @@ cp customgeo.dat /usr/local/share/xray/ # not yet tested
 sudo xray -config=config_client_username.json
 ```
 
+As alternative, GUI app v2rayA can be used. It creates a server, and its interface is
+available at localhost:2017 in the browser. Instructions can be found [here](V2RayA.ru.md) (in Russian).
+
 #### Android
 
 For many mobile applications it is enough to paste a client config in a link form from the buffer, and add customgeo in an appropriate form
@@ -153,6 +159,10 @@ some instructions for [V2RayNG (RU)](V2RayNG.ru.md) and [HiddifyNG (EN)](Hiddify
 
 Use [Straisand](https://apps.apple.com/us/app/streisand/id6450534064). Its configuration is very similar to that of V2Ray and Hiddify, here
 is the [instruction for Straisand](Straisand.md).
+
+#### OpenWRT
+
+Use *v2rayA*. Detailed instruction can be found [here](V2RayA.ru.md) (in Russian).
 
 #### Others
 
