@@ -75,6 +75,14 @@
         "sourcePort": "6881-6889",
         "outboundTag": "block"
       },
+      // exceptions for *.ru websites that shouldn't be blocked
+      {
+        "type": "field",
+        "domain": [
+            "ext:customgeo.dat:coherence-extra-exceptions"
+        ],
+        "outboundTag": "direct"
+      },
       // block domestic client traffic if it's coming somehow (e.g. wrong client config)
       {
         "type": "field",
