@@ -286,7 +286,13 @@ but not present; to generate them, try
     ./ex.sh conf${normal}"
         exit 1
     fi
-    if [ -v $1 ]
+    if $1
+    then
+        resume=false
+    else
+        resume=true
+    fi
+    if [ -v $2 ]
     then
         echo -e "${red}usernames not set${normal}
 For default user, use config_client.json generated
@@ -297,7 +303,7 @@ preferably of letters and digits only."
     # backup server config
     cp_to_backup ./conf/config_server.json
     # loop over usernames
-    for username in "$@"
+    for username in "${@:2}"
     do
         username_exists=false
         client_emails=$(jq ".inbounds[1].settings.clients[].email" ./conf/config_server.json)
@@ -312,15 +318,28 @@ preferably of letters and digits only."
         done
         if $username_exists
         then
-            echo -e "${yellow}username ${username} already exists, no new config created fot it${normal}"
+            echo -e "${yellow}username ${username} already exists is the server config,
+no new config created fot it${normal}"
         else
-            id=$(xray uuid) # generate random uuid for vless
-            # generate random short_id for grpc-reality
-            short_id=$(openssl rand -hex 8)
-            # make new user config from default user config
-            ok1=$(cat ./conf/config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${username}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > ./conf/config_client_${username}.json)
-            # then make the user (not root) an owner of a file
-            [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_${username}.json
+            if [ $resume ]
+            then
+                if [ ! -f "./conf/config_client_$username.json" ]
+                then
+                    echo -e "${red}no ./conf/config_client_${username}.json found, can\'t resume${normal}"
+                    exit 1
+                fi
+                id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" ./conf/config_client_${username}.json))
+                short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" ./conf/config_client_${username}.json))
+                ok1=true
+            else
+                id=$(xray uuid) # generate random uuid for vless
+                # generate random short_id for grpc-reality
+                short_id=$(openssl rand -hex 8)
+                # make new user config from default user config
+                ok1=$(cat ./conf/config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${username}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > ./conf/config_client_${username}.json)
+                # then make the user (not root) an owner of a file
+                [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_${username}.json
+            fi
             # update server config
             client="
               {
@@ -330,16 +349,21 @@ preferably of letters and digits only."
               }
             "
             # update server config
-            cp ./conf/config_server.json ./conf/tmpconfig.json
-            ok2=$(cat ./conf/tmpconfig.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ./conf/config_server.json)
-            rm ./conf/tmpconfig.json
+            cp ./conf/config_server.json ./conf/tmp_server_config.json
+            ok2=$(cat ./conf/tmp_server_config.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ./conf/config_server.json)
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_server.json
             if $ok1 && $ok2
             then
-                echo -e "${green}config_client_${username}.json is written, config_server.json is updated${normal}"
+                rm ./conf/tmp_server_config.json
+                if [ ! $resume ]
+                then
+                    echo -e "${green}config_client_${username}.json is written,${normal}"
+                fi
+                echo -e "${green}config_server.json is updated${normal}"
             else
                 echo -e "${yellow}something went wrong with username ${username}${normal}"
+                exit 1
             fi
         fi
     done
@@ -479,9 +503,9 @@ then
         push
     fi
 
-elif [ $command = "add" ]
+elif [ $command = "add" ] || [ $command = "resume" ]
 then
-    add "${@:2}"
+    add true "${@:2}"
     #
     echo -e "Copy config to xray's dir and restart xray? (Y/n)"
     read answer
@@ -490,7 +514,7 @@ then
         push
     fi
 
-elif [ $command = "del" ]
+elif [ $command = "del" ] || [ $command = "suspend" ]
 then
     if [ -v $2 ]
     then
@@ -514,19 +538,33 @@ then
             echo -e "${yellow}no config for user ${username}${normal}"
         else
             short_id=$(jq ".outbounds[0].streamSettings.realitySettings.shortId" $config)
-            cp ./conf/config_server.json ./conf/tmpconfig.json
+            cp ./conf/config_server.json ./conf/tmp_server_config.json
             # update server config
-            ok1=$(cat ./conf/tmpconfig.json | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > ./conf/config_server.json)
-            rm ./conf/tmpconfig.json
+            ok1=$(cat ./conf/tmp_server_config.json | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > ./conf/config_server.json)
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_server.json
-            ok2=$(rm ./conf/config_client_${username}.json)
-            if $ok1 && $ok2
+            if [ $command = "del" ]
             then
-                echo -e "${green}config_client_${username}.json is deleted,
-config_server.json is updated${normal}"
+                ok2=$(rm ./conf/config_client_${username}.json)
+                if $ok1 && $ok2
+                then
+                    rm ./conf/tmp_server_config.json
+                    echo -e "${green}config_client_${username}.json is deleted,
+    config_server.json is updated${normal}"
+                else
+                    echo -e "${red}something went wrong with username ${username}${normal}"
+                    exit 1
+                fi
             else
-                echo -e "${red}something went wrong with username ${username}${normal}"
+                if $ok1
+                then
+                    rm ./conf/tmp_server_config.json
+                    echo -e "${green}user ${username} is suspended,
+config_server.json is updated${normal}"
+                else
+                    echo -e "${red}something went wrong with username ${username}${normal}"
+                    exit 1
+                fi
             fi
         fi
     done
@@ -664,16 +702,17 @@ then
                     \"flow\": \"xtls-rprx-vision\"
                   }
                 "
-                cp ${to}/config_server.json ${to}/tmpconfig.json
-                ok2=$(cat ${to}/tmpconfig.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ${to}/config_server.json)
-                rm ${to}/tmpconfig.json
+                cp ${to}/config_server.json ${to}/tmp_server_config.json
+                ok2=$(cat ${to}/tmp_server_config.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ${to}/config_server.json)
                 # then make the user (not root) an owner of a file
                 [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ${to}/config_server.json
                 if $ok1 && $ok2
                 then
+                    rm ${to}/tmp_server_config.json
                     echo -e "${green}${to}/config_client_${uname_from_email}.json is written, ${to}/config_server.json is updated${normal}"
                 else
                     echo -e "${yellow}something went wrong with username ${uname_from_email}${normal}"
+                    exit 1
                 fi
             fi
         fi
@@ -728,6 +767,9 @@ Here is a list of all the commands available:
     ${bold}add ${underl}usernames${normal}   add users with given usernames to configs,
                     usernames should by separated by spaces
     ${bold}del ${underl}usernames${normal}   delete users with given usernames from configs
+    ${bold}suspend ${underl}usernames${normal} delete users with given usernames from the server config
+                      but don't delete the user configs
+    ${bold}resume ${underl}usernames${normal}  add users from suspended configs to the server config
     ${bold}push${normal}            copy config to xray's dir and restart xray
     ${bold}link ${underl}config${normal}     convert user config to a link acceptable by
                     client applications such as Hiddify or V2ray
