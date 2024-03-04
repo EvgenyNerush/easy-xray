@@ -163,8 +163,8 @@ Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=
 
 #### iOS
 
-Используйте [Straisand](https://apps.apple.com/us/app/streisand/id6450534064). Конфигурирование аналогично тому, что описано для V2Ray или
-Hiddify, здесь [инструкция для Straisand](Straisand.ru.md).
+Используйте [Streisand](https://apps.apple.com/us/app/streisand/id6450534064). Конфигурирование аналогично тому, что описано для V2Ray или
+Hiddify, здесь [инструкция для Streisand](Streisand.ru.md).
 
 #### OpenWRT
 
