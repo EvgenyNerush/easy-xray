@@ -321,11 +321,11 @@ preferably of letters and digits only."
             echo -e "${yellow}username ${username} already exists is the server config,
 no new config created fot it${normal}"
         else
-            if [ $resume ]
+            if $resume
             then
                 if [ ! -f "./conf/config_client_$username.json" ]
                 then
-                    echo -e "${red}no ./conf/config_client_${username}.json found, can\'t resume${normal}"
+                    echo -e "${red}no ./conf/config_client_${username}.json found, can't resume${normal}"
                     exit 1
                 fi
                 id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" ./conf/config_client_${username}.json))
@@ -403,6 +403,10 @@ sudo xray run -c ./conf/${config}${normal}"
     fi
 }
 
+echo_stats () {
+    echo -e $1 | tee -a "stats.log"
+}
+
 #############
 ### MAIN ####
 #############
@@ -473,7 +477,7 @@ or
     then
         echo -e "Enter usernames separated by spaces"
         read usernames
-        add $usernames
+        add true $usernames
     fi
     #
     echo -e "Copy config to xray's dir and restart xray? (Y/n)"
@@ -493,7 +497,7 @@ then
     then
         echo -e "Enter usernames separated by spaces"
         read usernames
-        add $usernames
+        add true $usernames
     fi
     #
     echo -e "Copy config to xray's dir and restart xray? (Y/n)"
@@ -505,7 +509,12 @@ then
 
 elif [ $command = "add" ] || [ $command = "resume" ]
 then
-    add true "${@:2}"
+    if [ $command = "add" ]
+    then
+        add true "${@:2}"
+    else
+        add false "${@:2}"
+    fi
     #
     echo -e "Copy config to xray's dir and restart xray? (Y/n)"
     read answer
@@ -615,35 +624,41 @@ then
     if [ ! -z "$client_stats_proxy_down" ] # output is not a zero string, hence script is running on a client
     then
         ## Client statistics ##
-        echo "Downloaded via server: $(echo $client_stats_proxy_down | pretty_stats)"
+        echo "" >> "stats.log"
+        echo "----------" >> "stats.log"
+        date >> "stats.log"
+        echo_stats "Downloaded via server: $(echo $client_stats_proxy_down | pretty_stats)"
         #
         client_stats_proxy_up=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>proxy>>>traffic>>>uplink" 2> /dev/null)
-        echo "Uploaded via server: $(echo $client_stats_proxy_up | pretty_stats)"
+        echo_stats "Uploaded via server: $(echo $client_stats_proxy_up | pretty_stats)"
         #
         client_stats_direct_down=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>downlink" 2> /dev/null)
-        echo "Downloaded via client directly: $(echo $client_stats_direct_down | pretty_stats)"
+        echo_stats "Downloaded via client directly: $(echo $client_stats_direct_down | pretty_stats)"
         #
         client_stats_direct_up=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>uplink" 2> /dev/null)
-        echo "Uploaded via client directly: $(echo $client_stats_direct_up | pretty_stats)"
+        echo_stats "Uploaded via client directly: $(echo $client_stats_direct_up | pretty_stats)"
     elif [ ! -z "$server_stats_direct_down" ] # output is not a zero string, hence script is running on a server
     then
         ## Server statistics ##
-        echo "Downloaded in total: $(echo $server_stats_direct_down | pretty_stats)"
+        echo "" >> "stats.log"
+        echo "----------\n" >> "stats.log"
+        date >> -a "stats.log"
+        echo_stats "Downloaded in total: $(echo $server_stats_direct_down | pretty_stats)"
         #
         server_stats_direct_up=$(xray api stats -server=127.0.0.1:8080 -name "outbound>>>direct>>>traffic>>>uplink" 2> /dev/null)
-        echo "Uploaded in total: $(echo $server_stats_direct_up | pretty_stats)"
+        echo_stats "Uploaded in total: $(echo $server_stats_direct_up | pretty_stats)"
         #
         # Per user statistics
         conf_file="./conf/config_server.json" # assuming xray is running with this config
         qemails=$(cat $conf_file | jq ".inbounds[1].settings.clients[].email")
         for qemail in ${qemails[@]}
         do
-            echo ""
+            echo_stats ""
             email=$(strip_quotes $qemail)
             user_stats_down=$(xray api stats -server=127.0.0.1:8080 -name "user>>>${email}>>>traffic>>>downlink" 2> /dev/null)
-            echo "Downloaded by ${email}: $(echo $user_stats_down | pretty_stats)"
+            echo_stats "Downloaded by ${email}: $(echo $user_stats_down | pretty_stats)"
             user_stats_up=$(xray api stats -server=127.0.0.1:8080 -name "user>>>${email}>>>traffic>>>uplink" 2> /dev/null)
-            echo "Uploaded by ${email}: $(echo $user_stats_up | pretty_stats)"
+            echo_stats "Uploaded by ${email}: $(echo $user_stats_up | pretty_stats)"
         done
     else
         echo -e "${red}xray should be running to aquire or reset statistics${normal}"
@@ -773,7 +788,7 @@ Here is a list of all the commands available:
     ${bold}push${normal}            copy config to xray's dir and restart xray
     ${bold}link ${underl}config${normal}     convert user config to a link acceptable by
                     client applications such as Hiddify or V2ray
-    ${bold}stats${normal}           print some traffic statistics
+    ${bold}stats${normal}           print some traffic statistics and write to stats.log
     ${bold}stats reset${normal}     print statistics then set them to zero
     ${bold}import ${underl}from${normal} ${underl}to${normal}  import users from one directory that contains
                     user configs to another directory that contains
