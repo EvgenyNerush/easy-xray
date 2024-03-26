@@ -246,6 +246,30 @@
         ],
         "routeOnly": true
       }
+    },
+    // this inbound can be used with Nginx configured to listen grpc on IPv6 address;
+    // vless can't give a reasonable fallback when used with grpc, but nginx can;
+    // see 'CDN' section in Readme for details
+    {
+      "tag": "grpc",
+      "listen": "127.0.0.1",
+      "port": 50051,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "client_id"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "grpc",
+        "grpcSettings": {
+          // nginx config should contain `location /your_service_name`
+          "serviceName": "your_service_name"
+        }
+      }
     }
   ],
   // server-side outbound configuration

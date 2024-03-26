@@ -29,7 +29,7 @@ can
 First you need a Linux server (VPS) with [jq](https://jqlang.github.io/jq/) and `openssl` installed, they can be found in repositories of
 almost all popular Linux distributions. Then download whole `easy-xray` folder to the VPS, make the script `ex.sh` executable, and run a
 desired command with it. Use `./ex.sh help` to see the list of all available commands and `./ex.sh install` to start interactive prompt
-that installs and configures XRay.
+that installs and configures XRay. Do not use easy-xray for user `root`, use usual user and `sudo` instead.
 
 ```
 chmod +x ex.sh
@@ -39,6 +39,9 @@ sudo ./ex.sh install
 
 Now you have `conf` folder with server and client configs and some user configs. Server config is properly installed and XRay is running.
 Time to share configs or *links* with users! To generate config in the link form, use `./ex.sh link user_config_file.json`.
+
+If your VPS have both IPv4 and IPv6 addressess, easy-xray can be configured such that IPv6 address is used for access with grpc-tls
+protocol via CDN (e.g. Cloudflare). See [CDN instruction](CDN.md) for details.
 
 #### Docker
 

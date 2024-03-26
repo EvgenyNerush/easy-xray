@@ -137,7 +137,17 @@ conf () {
     check_command jq "needed for operations with configs"
     check_command openssl "needed for strong random numbers excluding some types of attacks"
     #
-    echo -e "Enter IPv4 or IPv6 address of your xray server, or its domain name:"
+    echo -e "Enter domain name to use with IPv6 and CDN (e.g. Cloudflare),
+or leave blank for simple default configuration:"
+    read server_name4cdn
+    #
+    if [ -v $server_name4cdn ]
+    then
+        echo -e "Enter IPv4 or IPv6 address of your xray server, or its domain name:"
+    else
+        check_command sed "needed to make nginx's site to use cdn"
+        echo -e "Enter IPv4 address of your xray server:"
+    fi
     read address
     if [ -v $address ]
     then
@@ -145,11 +155,11 @@ conf () {
         exit 1
     fi
     id=$(xray uuid) # random uuid for VLESS
-    echo -e "Generate private and public keys? (Y/n)"
+    echo -e "Generate xray private and public keys? (Y/n)"
     read answer
     if [ ! -v $answer ] && [ $answer = 'n' ]
     then
-        echo -e "Enter private and public keys delimited by a space:"
+        echo -e "Enter xray private and public keys delimited by a space:"
         read answer
         private_key=$(echo $answer | cut -d " " -f 1) # get the first field of fields delimited by spaces
         public_key=$(echo $answer | cut -d " " -f 2)
@@ -217,10 +227,33 @@ Better if it is quite popular and not blocked in your country:
     email="love@xray.com"
     #
     unsafe_mkdir conf
+    #
+    if [ -v $server_name4cdn ]
+    then
+        listen="0.0.0.0"
+    else
+        listen=$address # otherwise xray will listen also at ip6
+        # grpc service name (location); letters and digits only
+        echo -e "Enter grpc service name or hit Enter to autogenerate:"
+        read service_name
+        if [ -v ${service_name} ]
+        then
+            service_name=$(openssl rand -base64 9 | sed 's![^[:alnum:]]!!g')
+        fi
+        # config for nginx; `!` in sed allows not to escape special characters such as dot and plus sign
+        cat ./template_site4cdn.conf \
+            | sed "s!server_domain_name!${server_name4cdn}!" \
+            | sed "s!www.youtube.com!${fake_site}!" \
+            | sed "s!your_service_name!${service_name}!" \
+            > ./conf/site4cdn.conf
+        cp ./conf/site4cdn.conf /etc/nginx/sites-enabled/
+    fi
+    #
     ## Make server config ##
     jsonc2json template_config_server.jsonc \
         | jq ".inbounds[1].settings.clients[0].id=\"${id}\"
             | .inbounds[2].settings.clients[0].id=\"${id}\"
+            | .inbounds[1].listen=\"${listen}\"
             | .inbounds[1].settings.clients[0].email=\"${email}\"
             | .inbounds[2].settings.clients[0].email=\"${email}\"
             | .inbounds[1].streamSettings.realitySettings.dest=\"${fake_site}:443\"
@@ -230,7 +263,9 @@ Better if it is quite popular and not blocked in your country:
             | .inbounds[1].streamSettings.realitySettings.privateKey=\"${private_key}\"
             | .inbounds[2].streamSettings.realitySettings.privateKey=\"${private_key}\"
             | .inbounds[1].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]
-            | .inbounds[2].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]" \
+            | .inbounds[2].streamSettings.realitySettings.shortIds=[ \"${short_id}\" ]
+            | .inbounds[3].settings.clients[0].id=\"${id}\"
+            | .inbounds[3].streamSettings.grpcSettings.serviceName=\"${service_name}\" " \
         > ./conf/config_server.json
     # make the user (not root) the owner of the file
     [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_server.json
@@ -270,6 +305,24 @@ Better if it is quite popular and not blocked in your country:
     else
         echo -e "${red}config files are not generated${normal}"
         exit 1
+    fi
+    ## Make main client config_cdn ##
+    if [ ! -v $server_name4cdn ]
+    then
+        jsonc2json template_config_client_cdn.jsonc \
+            | jq ".outbounds[0].settings.vnext[0].address=\"${server_name4cdn}\"
+                | .outbounds[0].settings.vnext[0].users[0].id=\"${id}\"
+                | .outbounds[0].streamSettings.grpcSettings.serviceName=\"${service_name}\"" \
+            > ./conf/config_client_cdn.json
+        # make the user (not root) an owner of a file
+        [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_cdn.json
+        if [ -f "./conf/config_client_cdn.json" ]
+        then
+            echo -e "${green}config_cdn file is generated${normal}"
+        else
+            echo -e "${red}config_cdn file is not generated${normal}"
+            exit 1
+        fi
     fi
 }
 
@@ -339,6 +392,11 @@ no new config created fot it${normal}"
                 ok1=$(cat ./conf/config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${username}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > ./conf/config_client_${username}.json)
                 # then make the user (not root) an owner of a file
                 [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_${username}.json
+                if [ -f "./conf/config_client_cdn.json" ]
+                then
+                    cat ./conf/config_client_cdn.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\"" > ./conf/config_client_${username}_cdn.json
+                [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_${username}_cdn.json
+                fi
             fi
             # update server config
             client="
@@ -348,9 +406,13 @@ no new config created fot it${normal}"
                 \"flow\": \"xtls-rprx-vision\"
               }
             "
-            # update server config
+            grpc_client_id="
+          {
+            \"id\": \"${id}\"
+          }
+            "
             cp ./conf/config_server.json ./conf/tmp_server_config.json
-            ok2=$(cat ./conf/tmp_server_config.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ./conf/config_server.json)
+            ok2=$(cat ./conf/tmp_server_config.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"] | .inbounds[3].settings.clients += [${grpc_client_id}]" > ./conf/config_server.json)
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_server.json
             if $ok1 && $ok2
@@ -449,6 +511,16 @@ sudo ./ex.sh install${normal}"
             echo -e "${red}customgeo.dat not copied to ${dat_dir}${normal}"
             exit 1
         fi
+        # for cert.pem
+        mkdir -p /etc/ssl/certs/
+        # for cert.key
+        mkdir -p /etc/ssl/private/
+        # for nginx's 'site'
+        mkdir -p /etc/nginx/sites-enabled/
+        #
+        cp -b ./cert.pem /etc/ssl/certs/
+        cp -b ./cert.key /etc/ssl/private/
+        cp -b ./nginx.conf /etc/nginx/nginx.conf
     else
         echo -e "${red}xray not installed, something goes wrong${normal}"
         exit 1
@@ -547,14 +619,19 @@ then
             echo -e "${yellow}no config for user ${username}${normal}"
         else
             short_id=$(jq ".outbounds[0].streamSettings.realitySettings.shortId" $config)
+            id=$(jq ".outbounds[0].settings.vnext[0].users[0].id" $config)
             cp ./conf/config_server.json ./conf/tmp_server_config.json
             # update server config
-            ok1=$(cat ./conf/tmp_server_config.json | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id}))" > ./conf/config_server.json)
+            ok1=$(cat ./conf/tmp_server_config.json | jq "del(.inbounds[1].settings.clients[] | select(.email == \"${username}@example.com\")) | del(.inbounds[1].streamSettings.realitySettings.shortIds[] | select(. == ${short_id})) | del(.inbounds[3].settings.clients[] | select(.id == ${id}))" > ./conf/config_server.json)
             # then make the user (not root) an owner of a file
             [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_server.json
             if [ $command = "del" ]
             then
                 ok2=$(rm ./conf/config_client_${username}.json)
+                if [ -f "./conf/config_client_${username}_cdn.json" ]
+                then
+                    rm ./conf/config_client_${username}_cdn.json
+                fi
                 if $ok1 && $ok2
                 then
                     rm ./conf/tmp_server_config.json
@@ -602,17 +679,26 @@ then
         exit 1
     fi
     check_command jq "needed for operations with configs"
-    id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
-    address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
-    if [[ $address == *":"* ]] # address contains ':', as IPv6 does
+    network=$(strip_quotes $(jq ".outbounds[0].streamSettings.network" $conf_file))
+    if [ $network = "tcp" ] # tls-vless-reality config
     then
-        address="[${address}]"
+        id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
+        address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
+        if [[ $address == *":"* ]] # address contains ':', as IPv6 does
+        then
+            address="[${address}]"
+        fi
+        port=$(jq ".outbounds[0].settings.vnext[0].port" $conf_file)
+        public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
+        server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
+        short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
+        link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
+    else # grpc config
+        id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
+        address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
+        service_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.grpcSettings.serviceName" $conf_file))
+        link="vless://${id}@${address}:443?security=tls&encryption=none&type=grpc&serviceName=${service_name}#easy-xray+%F0%9F%97%BD+CDN"
     fi
-    port=$(jq ".outbounds[0].settings.vnext[0].port" $conf_file)
-    public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
-    server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
-    short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
-    link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
     echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt or misc/customgeo4nekoray.txt as well
 ${green}here is your link:${normal}"
     echo $link
@@ -709,6 +795,12 @@ then
                 ok1=$(cat ${to}/config_client.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\" | .outbounds[0].settings.vnext[0].users[0].email=\"${uname_from_email}@example.com\" | .outbounds[0].streamSettings.realitySettings.shortId=\"${short_id}\"" > ${to}/config_client_${uname_from_email}.json)
                 # then make the user (not root) an owner of a file
                 [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ${to}/config_client_${uname_from_email}.json
+                #
+                if [ -f "./conf/config_client_cdn.json" ]
+                then
+                    cat ./conf/config_client_cdn.json | jq ".outbounds[0].settings.vnext[0].users[0].id=\"${id}\"" > ./conf/config_client_${uname_from_email}_cdn.json
+                [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ./conf/config_client_${username}_cdn.json
+                fi
                 # update server config
                 client="
                   {
@@ -717,8 +809,13 @@ then
                     \"flow\": \"xtls-rprx-vision\"
                   }
                 "
+                grpc_client_id="
+          {
+            \"id\": \"${id}\"
+          }
+                "
                 cp ${to}/config_server.json ${to}/tmp_server_config.json
-                ok2=$(cat ${to}/tmp_server_config.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"]" > ${to}/config_server.json)
+                ok2=$(cat ${to}/tmp_server_config.json | jq ".inbounds[1].settings.clients += [${client}] | .inbounds[1].streamSettings.realitySettings.shortIds += [\"${short_id}\"] | .inbounds[3].settings.clients += [${grpc_client_id}]" > ${to}/config_server.json)
                 # then make the user (not root) an owner of a file
                 [[ $SUDO_USER ]] && chown "$SUDO_USER:$SUDO_USER" ${to}/config_server.json
                 if $ok1 && $ok2
