@@ -91,4 +91,7 @@ domain:microsoft.com,
 domain:apple.com,
 domain:habr.com,
 domain:habrastorage.org,
-domain:viqeo.tv
+domain:viqeo.tv,
+domain:animego.org,
+domain:cloud.kodik-storage.com,
+domain:aniboom.one
