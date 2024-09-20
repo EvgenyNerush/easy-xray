@@ -85,7 +85,6 @@ domain:chuimg.com
 domain:autonavi.com
 domain:amap.com
 domain:mmstat.com
-domain:googleapis.com
 domain:mozilla.com
 domain:microsoft.com
 domain:apple.com
