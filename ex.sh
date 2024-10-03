@@ -499,6 +499,7 @@ sudo ./ex.sh install${normal}"
         fi
     fi
     #
+    check_command curl "required to download the xray installation script"
     if bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
     then
         echo -e "${green}xray installed${normal}"
