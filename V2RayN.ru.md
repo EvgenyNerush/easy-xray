@@ -7,6 +7,9 @@
 [misc/customgeo4v2rayNwin.txt](https://github.com/EvgenyNerush/easy-xray/blob/main/misc/customgeo4v2rayNwin.txt) вставляем в Whitelist.
 V2rayN чувствителен к символам окончания строк, поэтому не вставляйте в него customgeo4hiddify.txt.
 
+Если V2rayN включён, но при этом не используется системой (например, whatismyip показывает российский адрес), в Настройки -> Настройка параметров ->
+TunMode -> Stack выбираете system вместо gvisor.
+
 ![](figs/v2rayN-1.png)
 
 ![](figs/v2rayN-2.png)
