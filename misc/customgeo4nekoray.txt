@@ -22,6 +22,13 @@ domain:mradx.net
 domain:aestatic.net
 domain:pushwoosh.com
 domain:vk.com
+domain:vk-portal.net
+domain:vk-cdn.net
+domain:vkuser.net
+domain:vkuseraudio.net
+domain:vkuseraudio.com
+domain:vkuservideo.com
+domain:vkuservideo.net
 domain:userapi.com
 domain:otm-r.com
 domain:2gis.com
@@ -36,6 +43,10 @@ domain:boosty.to
 domain:eaglecdn.com
 domain:livejournal.com
 domain:livejournal.net
+domain:upravel.com
+domain:flocktory.com
+domain:wbstatic.net
+domain:naydex.net
 domain:edc.sale
 domain:stellarlabs.ai
 domain:myminsk.com
@@ -88,7 +99,5 @@ domain:mmstat.com
 domain:mozilla.com
 domain:microsoft.com
 domain:apple.com
-domain:habr.com
-domain:habrastorage.org
 domain:viqeo.tv
-
+domain:metanit.com

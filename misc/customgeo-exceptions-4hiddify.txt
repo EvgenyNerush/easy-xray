@@ -34,4 +34,3 @@ domain:tik-tokapi.com,
 domain:tiktokd.net,
 domain:tiktokd.org,
 domain:tiktokw.us,
-
