@@ -104,7 +104,7 @@
                 "id": "client_id",
                 "email": "client_email",
                 "encryption": "none",
-                "flow": "xtls-rprx-vision"
+                "flow": "xtls-rprx-vision-udp443"
               }
             ]
           }
@@ -154,12 +154,12 @@
         ],
         "outboundTag": "api"
       },
-      // guide udp traffic to `direct` outbound
-      {
-        "type": "field",
-        "network": "udp",
-        "outboundTag": "direct"
-      },
+      // uncomment before installation to guide udp traffic to `direct` outbound
+      //{
+      //  "type": "field",
+      //  "network": "udp",
+      //  "outboundTag": "direct"
+      //},
       // block localhost connections through xray
       {
         "type": "field",
