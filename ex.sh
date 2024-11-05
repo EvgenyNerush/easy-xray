@@ -174,17 +174,17 @@ or leave blank for simple default configuration:"
     #
     echo -e "Choose a fake site to mimic.
 Better if it is quite popular and not blocked in your country:
-(1) www.youtube.com (default)
+(1) duckduckgo.com (default)
 (2) www.microsoft.com
 (3) www.google.com
 (4) www.bing.com
 (5) www.yahoo.com
 (6) www.adobe.com
 (7) aws.amazon.com
-(8) discord.com
+(8) www.aliexpress.com
 (9) your variant"
     read number
-    default_fake_site="www.youtube.com"
+    default_fake_site="duckduckgo.com"
     if [ -v $number ]
     then
         fake_site=$default_fake_site
@@ -209,7 +209,7 @@ Better if it is quite popular and not blocked in your country:
             fake_site="aws.amazon.com"
         elif [ $number -eq 8 ]
         then
-            fake_site="discord.com"
+            fake_site="www.aliexpress.com"
         elif [ $number -eq 9 ]
         then
             echo -e "type your variant:"
@@ -243,7 +243,7 @@ Better if it is quite popular and not blocked in your country:
         # config for nginx; `!` in sed allows not to escape special characters such as dot and plus sign
         cat ./template_site4cdn.conf \
             | sed "s!server_domain_name!${server_name4cdn}!" \
-            | sed "s!www.youtube.com!${fake_site}!" \
+            | sed "s!duckduckgo.com!${fake_site}!" \
             | sed "s!your_service_name!${service_name}!" \
             > ./conf/site4cdn.conf
         cp ./conf/site4cdn.conf /etc/nginx/sites-enabled/
@@ -278,7 +278,7 @@ Better if it is quite popular and not blocked in your country:
                         \"id\": \"${id}\",
                         \"email\": \"${email}\",
                         \"encryption\": \"none\",
-                        \"flow\": \"xtls-rprx-vision\"
+                        \"flow\": \"xtls-rprx-vision-udp443\"
                     }
                 ]
             }
@@ -692,7 +692,7 @@ then
         public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
         server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
         short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
-        link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
+        link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision-udp443&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
     else # grpc config
         id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
         address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
