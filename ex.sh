@@ -511,16 +511,28 @@ sudo ./ex.sh install${normal}"
             echo -e "${red}customgeo.dat not copied to ${dat_dir}${normal}"
             exit 1
         fi
-        # for cert.pem
-        mkdir -p /etc/ssl/certs/
-        # for cert.key
-        mkdir -p /etc/ssl/private/
-        # for nginx's 'site'
-        mkdir -p /etc/nginx/sites-enabled/
-        #
-        cp -b ./cert.pem /etc/ssl/certs/
-        cp -b ./cert.key /etc/ssl/private/
-        cp -b ./nginx.conf /etc/nginx/nginx.conf
+        echo -e "Make CDN support? (y/N)"
+        read answer
+        if [ ! -v $answer ] && ([ ${answer::1} = "y" ] || [ ${answer::1} = "Y" ])
+        then
+            if [ -f "cert.pem" ] && [ -f "cert.key" ] && [ -f "nginx.conf" ]
+            then
+                # for cert.pem
+                mkdir -p /etc/ssl/certs/
+                # for cert.key
+                mkdir -p /etc/ssl/private/
+                # for nginx's 'site'
+                mkdir -p /etc/nginx/sites-enabled/
+                #
+                cp -b ./cert.pem /etc/ssl/certs/
+                cp -b ./cert.key /etc/ssl/private/
+                cp -b ./nginx.conf /etc/nginx/nginx.conf
+                systemctl enable nginx
+            else
+                echo -e "${red}no Cloudflare certificates cert.* or no nginx.conf found, aborting${normal}"
+                exit 1
+            fi
+        fi
     else
         echo -e "${red}xray not installed, something goes wrong${normal}"
         exit 1
