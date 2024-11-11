@@ -105,3 +105,6 @@ echo -e "Then you are ready to log out from the server, then log in as ${usernam
 with new ssh port ${ssh_port}.
 "
 
+echo -e "If you encouner problems, try to reboot server first, to restart services.
+"
+

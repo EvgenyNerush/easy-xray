@@ -9,8 +9,11 @@ fi
 
 dnf update --assumeyes
 
-# - vim is a cool text editor
-# - iproute is needed for `ss` command, to see which ports are already in use
-# - you need podman if plan to use Cloudflare CDN
 # - jq and openssl are needed for easy-xray
-dnf install --assumeyes podman openssl jq vim iproute
+# - you need nginx if plan to use Cloudflare CDN
+# - iproute is needed for `ss` command, to see which ports are already in use
+# - vim is a cool text editor
+dnf install --assumeyes jq openssl nginx iproute vim
+
+echo -e "Finished. Time to reboot!
+"
