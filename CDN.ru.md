@@ -5,8 +5,8 @@ Xray нельзя поставить на "голый" сервер - нужна
 [init0.sh](misc/init0.sh) и [init1.sh](misc/init1.sh). Скопируйте их на сервер
 
 ```
-curl -L https://github.com/EvgenyNerush/easy-xray/blob/test/misc/init0.sh
-curl -L https://github.com/EvgenyNerush/easy-xray/blob/test/misc/init1.sh
+curl -L -o init0.sh https://github.com/EvgenyNerush/easy-xray/raw/main/misc/init0.sh
+curl -L -o init1.sh https://github.com/EvgenyNerush/easy-xray/raw/main/misc/init1.sh
 ```
 
 затем внимательно прочитайте и исправьте по необходимости, и запустите от рута. После нужно зайти в систему от имени нового пользователя и
