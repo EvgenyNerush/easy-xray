@@ -243,3 +243,11 @@ Port 43210
 
 [Чат проекта](https://t.me/eXRay_chat) в Телеграм.
 
+#### Для донатов
+
+[Boosty](https://boosty.to/exsh)
+
+ZEC u1jyr346fqf7arfzp56p30gmc6j6r9lc2ppm8cl79p6zfhxgel44ht3glzyja0tajs3p6axf967f4cfxa7uqkspe82p9nz350ys6pey7st5sr26u6pplqe80v3mk468e8g4zaz52ccqxyp8fxnsnlq44s9yppapj3v20df0ntscvwesls9dujfpj94cvam8zf8xz74grp6rap0s7hzxsv
+
+XMR 45cVo35KgNWhW8f1GRLKsJDjhtyuVuudeWx8Xy3r5kFcfgikACUUxHhcNLa2jLQ6qb3WxG8b9v69RJ4nFih79ijTPaajjpo
+
