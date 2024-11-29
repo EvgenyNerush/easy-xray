@@ -243,6 +243,8 @@ Port 43210
 
 [Чат проекта](https://t.me/eXRay_chat) в Телеграм.
 
+[Поддержка](https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2F6iIcWT_dF2zN_w5xzZEY7HI2Prbh3ldP07YTyDexPjE%3D%40smp10.simplex.im%2FV0eXnZYcsKfcxGUhAhOZnQYEuwyGXGiP%23%2F%3Fv%3D1-3%26dh%3DMCowBQYDK2VuAyEAnWx2c8LPzWntsn6c4EcMWeSfX1aFfruHUUfUWh72Vlw%253D%26srv%3Drb2pbttocvnbrngnwziclp2f4ckjq65kebafws6g4hy22cdaiv5dwjqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22K8Xm2DpzPi1JpidW7VqrOA%3D%3D%22%7D) в SimpleX Chat.
+
 #### Для донатов
 
 [Boosty](https://boosty.to/exsh)
