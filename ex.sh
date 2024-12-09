@@ -710,7 +710,7 @@ then
         id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
         address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
         service_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.grpcSettings.serviceName" $conf_file))
-        link="vless://${id}@${address}:443?security=tls&encryption=none&type=grpc&serviceName=${service_name}#easy-xray+%F0%9F%97%BD+CDN"
+        link="vless://${id}@${address}:443?security=tls&encryption=none&fp=chrome&type=grpc&serviceName=${service_name}#easy-xray+%F0%9F%97%BD+CDN"
     fi
     echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt or misc/customgeo4nekoray.txt as well
 ${green}here is your link:${normal}"
