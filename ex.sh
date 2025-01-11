@@ -708,8 +708,23 @@ then
     conf_file=$2
     if [ -v $conf_file ]
     then
-        echo -e "${red}no config is given${normal}"
-        exit 1
+        if ! ls -U conf/config_client_*.json 1> /dev/null 2>&1; then
+            echo -e "${red}no config is given, and there are no any client configs${normal}"
+            exit 1
+        fi
+        echo -e "${yellow}no config is given, a list of client-link pairs is
+written to \033[33;3mconf/client_links.txt${yellow} from the following files:${normal}"
+        file="conf/client_links.txt"
+        : > $file
+        for conf_file in conf/config_client_*.json; do
+            echo -e "\033[33;3m  - ${conf_file}${normal}"
+            basename=$(basename $conf_file .json)
+            client=${basename#config_client_}
+            link=$(generate_link $conf_file)
+            echo -e "${client}\n$link\n" >> $file
+        done
+        sed -i '$d' $file
+        exit 0
     fi
     if [ ! -f $conf_file ]
     then
