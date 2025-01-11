@@ -469,6 +469,31 @@ echo_stats () {
     echo -e $1 | tee -a "stats.log"
 }
 
+# the main part of `./ex.sh link` command, generates the link from a client config file
+generate_link() {
+    network=$(strip_quotes $(jq ".outbounds[0].streamSettings.network" $1))
+    if [ $network = "tcp" ] # tls-vless-reality config
+    then
+        id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $1))
+        address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $1))
+        if [[ $address == *":"* ]] # address contains ':', as IPv6 does
+        then
+            address="[${address}]"
+        fi
+        port=$(jq ".outbounds[0].settings.vnext[0].port" $1)
+        public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $1))
+        server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $1))
+        short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $1))
+        link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision-udp443&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
+    else # grpc config
+        id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $1))
+        address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $1))
+        service_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.grpcSettings.serviceName" $1))
+        link="vless://${id}@${address}:443?security=tls&encryption=none&fp=chrome&type=grpc&serviceName=${service_name}#easy-xray+%F0%9F%97%BD+CDN"
+    fi
+    echo -e "$link"
+}
+
 #############
 ### MAIN ####
 #############
@@ -692,29 +717,9 @@ then
         exit 1
     fi
     check_command jq "needed for operations with configs"
-    network=$(strip_quotes $(jq ".outbounds[0].streamSettings.network" $conf_file))
-    if [ $network = "tcp" ] # tls-vless-reality config
-    then
-        id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
-        address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
-        if [[ $address == *":"* ]] # address contains ':', as IPv6 does
-        then
-            address="[${address}]"
-        fi
-        port=$(jq ".outbounds[0].settings.vnext[0].port" $conf_file)
-        public_key=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.publicKey" $conf_file))
-        server_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.serverName" $conf_file))
-        short_id=$(strip_quotes $(jq ".outbounds[0].streamSettings.realitySettings.shortId" $conf_file))
-        link="vless://${id}@${address}:${port}?fragment=&security=reality&encryption=none&pbk=${public_key}&fp=chrome&type=tcp&flow=xtls-rprx-vision-udp443&sni=${server_name}&sid=${short_id}#easy-xray+%F0%9F%97%BD"
-    else # grpc config
-        id=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].users[0].id" $conf_file))
-        address=$(strip_quotes $(jq ".outbounds[0].settings.vnext[0].address" $conf_file))
-        service_name=$(strip_quotes $(jq ".outbounds[0].streamSettings.grpcSettings.serviceName" $conf_file))
-        link="vless://${id}@${address}:443?security=tls&encryption=none&fp=chrome&type=grpc&serviceName=${service_name}#easy-xray+%F0%9F%97%BD+CDN"
-    fi
     echo -e "${yellow}don't forget to share misc/customgeo4hiddify.txt or misc/customgeo4nekoray.txt as well
 ${green}here is your link:${normal}"
-    echo $link
+    echo $(generate_link $conf_file)
 
 elif [ $command = "stats" ]
 then
