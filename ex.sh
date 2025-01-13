@@ -916,8 +916,9 @@ Here is a list of all the commands available:
                       but don't delete the user configs
     ${bold}resume ${underl}usernames${normal}  add users from suspended configs to the server config
     ${bold}push${normal}            copy config to xray's dir and restart xray
-    ${bold}link ${underl}config${normal}     convert user config to a link acceptable by
-                    client applications such as Hiddify or V2ray
+    ${bold}link ${underl}[config]${normal}     convert user config to a link acceptable by
+                    client applications such as Hiddify or V2ray;
+                    if config is omitted, generate conf/client_links.txt
     ${bold}stats${normal}           print some traffic statistics and write to stats.log
     ${bold}stats reset${normal}     print statistics then set them to zero
     ${bold}import ${underl}from${normal} ${underl}to${normal}  import users from one directory that contains
