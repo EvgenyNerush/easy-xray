@@ -1,10 +1,10 @@
-[v2RayTun in AppStore](https://apps.apple.com/us/app/v2raytun/id6476628951)
+[v2RayTun в AppStore](https://apps.apple.com/ru/app/v2raytun/id6476628951)
 
-[v2RayTun in Google Play](https://play.google.com/store/apps/details?id=com.v2raytun.android)
+[v2RayTun в Google Play](https://play.google.com/store/apps/details?id=com.v2raytun.android)
 
-The app is available for both Android and iOS, however, its versions are slightly different. 
+Приложение доступно как для Android, так и для iOS, однако версии незначительно отличаются друг от друга.
 
-Follow the instructions bellow (provided for Android version). Note that in the last frame it is necessary to paste platform-dependent ruleset.
+Следуйте инструкции ниже (на примере Android-версии). Обратите внимание, что на последнем кадре необходимо вставить набор правил, зависящий от вашей платформы.
 
 ![](figs/v2RayTun.png)
 
@@ -17,7 +17,7 @@ Follow the instructions bellow (provided for Android version). Note that in the 
 
 ### iOS
 
-Don't forget to enable the routing rules as they are disabled by default!
+Не забудьте включить правила маршрутизации, так как по умолчанию они выключены!
 
 [ios]::
 ```
