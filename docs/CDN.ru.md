@@ -2,7 +2,7 @@
 
 Xray нельзя поставить на "голый" сервер - нужна предварительная подготовка. Нужно создать пользователя, добавить его в группу sudo,
 настроить фаервол и перенести порт ssh. Эти действия можно автоматизировать. Для redhat-based дистрибутивов можно использовать скрипты
-[init0.sh](misc/init0.sh) и [init1.sh](misc/init1.sh). Скопируйте их на сервер
+[init0.sh](../misc/init0.sh) и [init1.sh](../misc/init1.sh). Скопируйте их на сервер
 
 ```
 curl -L -o init0.sh https://github.com/EvgenyNerush/easy-xray/raw/main/misc/init0.sh
