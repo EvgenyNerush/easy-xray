@@ -153,15 +153,20 @@ available at localhost:2017 in the browser. Instructions can be found [here](doc
 For many mobile applications it is enough to paste a client config in a link form from the buffer, and add customgeo in an appropriate form
 (see `misc` dir) to somethere like `Settings/Routing/Custom rules/Direct URL`. Tested applications are listed below.
 
-Use [V2RayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang&pcampaignid=web_share),
-[HiddifyNG](https://play.google.com/store/apps/details?id=ang.hiddify.com&pcampaignid=web_share) or [Hiddify
-Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=web_share). They are very similar to each other, here are
-some instructions for [V2RayNG (RU)](docs/V2RayNG.ru.md) and [HiddifyNG (EN)](docs/HiddifyNG.en.md).
+  - [v2RayTun](https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru) (instructions: [RU](docs/v2RayTun.ru.md), [EN](docs/v2RayTun.md)),
+  - [V2RayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang&pcampaignid=web_share) (instructions: [RU](docs/V2RayNG.ru.md)),
+  - [HiddifyNG](https://play.google.com/store/apps/details?id=ang.hiddify.com&pcampaignid=web_share) (instructions: [EN](docs/HiddifyNG.en.md)),
+  - [Hiddify Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=web_share).
+
+You can also use any other app which configuration is similar to the said.
 
 #### iOS
 
-Use [Streisand](https://apps.apple.com/us/app/streisand/id6450534064). Its configuration is very similar to that of V2Ray and Hiddify, here
-is the [instruction for Streisand](docs/Streisand.md).
+Use
+  - [v2RayTun](https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru) (instructions: [RU](docs/v2RayTun.ru.md), [EN](docs/v2RayTun.md))
+  - or [Streisand](https://apps.apple.com/us/app/streisand/id6450534064) (instructions: [RU](docs/Streisand.ru.md), [EN](docs/Streisand.ru.md)).
+  
+The configuration is very similar to that of V2Ray and Hiddify.
 
 #### OpenWRT
 
