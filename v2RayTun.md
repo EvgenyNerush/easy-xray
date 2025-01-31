@@ -1,3 +1,5 @@
+# v2RayTun
+
 [v2RayTun in AppStore](https://apps.apple.com/us/app/v2raytun/id6476628951)
 
 [v2RayTun in Google Play](https://play.google.com/store/apps/details?id=com.v2raytun.android)
@@ -7,6 +9,8 @@ The app is available for both Android and iOS, however, its versions are slightl
 Follow the instructions bellow (provided for Android version). Note that in the last frame it is necessary to paste platform-dependent ruleset.
 
 ![](figs/v2RayTun.png)
+
+## Rulesets
 
 ### Android
 

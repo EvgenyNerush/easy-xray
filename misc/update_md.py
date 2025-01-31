@@ -3,10 +3,10 @@
 # This script is designed for updating markdown files that contain
 # application-dependent rulesets. Such rulesets can be auto-generated
 # based on pre-defined templates and the contents of customgeo files.
-# The rulesets to update are prepended with `[identifier]::` which
-# serves as regex marker (not rendered in the final html). Currently
-# it only supports v2rayTun*.md files. Note that it also backs up
-# original data with .bak extension.
+# The rulesets to update are prepended with [identifier]:: which serves
+# as regex marker (not rendered in the final html). Currently it only
+# supports v2rayTun*.md files. Note that it also backs up original data
+# with .bak extension.
 
 import glob
 import re
