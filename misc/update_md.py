@@ -60,6 +60,8 @@ IOS = '''
 }}
 '''
 
+ROOT = "../docs/"
+
 WARNING = '\033[93m'
 ENDC = '\033[0m'
 
@@ -77,7 +79,7 @@ def main():
     ios = f"v2rayTun://import_route/{b64encode(ios.encode('ascii')).decode()}"
     android = dumps(loads(ANDROID.format(proxy, direct)), separators=SEPS)
 
-    for file in glob.glob("../v2RayTun*.md"):
+    for file in glob.glob(ROOT + "v2RayTun*.md"):
         print(f"Processing {file}...")
         with open(file, "r+") as f,\
              open(file + ".bak", "w") as bak:
