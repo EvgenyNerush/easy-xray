@@ -2,7 +2,7 @@
 
 *Script for Linux which makes XRay management easy*
 
-[Readme in Russian](README.ru.md) [(todo) Readme in Chinese](README.cn.md)
+[Readme in Russian](docs/README.ru.md) [(todo) Readme in Chinese](docs/README.cn.md)
 
 [XRay (aka ProjectX)](https://xtls.github.io/en/) is a frontier solution to circumvent the internet censorship. XRay allows to guide traffic
 through a server (VPS) outside the region of censorship as a proxie, but connection to xray server looks for authorities as a typical
@@ -12,7 +12,7 @@ the code on domestic websites.  As a proxy, XRay has no need to encrypt already 
 need to keep the connection alive, and users don't need to manually reconnect to it time-to-time. Also users don't need to turn a client off
 to go to most domestic websites.
 
-![xray-schematic: traffic to foreign websites goes through vps, traffic to domestic sites goes directly from pc](figs/xray-schematic.png)
+![xray-schematic: traffic to foreign websites goes through vps, traffic to domestic sites goes directly from pc](docs/figs/xray-schematic.png)
 
 Besides of its plusses, configuration and management of XRay server is quite sophisticated. So, here is a script which helps to do it. It
 can
@@ -41,7 +41,7 @@ Now you have `conf` folder with server and client configs and some user configs.
 Time to share configs or *links* with users! To generate config in the link form, use `./ex.sh link user_config_file.json`.
 
 If your VPS have both IPv4 and IPv6 addressess, easy-xray can be configured such that IPv6 address is used for access with grpc-tls
-protocol via CDN (e.g. Cloudflare). See [CDN instruction](CDN.md) for details.
+protocol via CDN (e.g. Cloudflare). See [CDN instruction](docs/CDN.md) for details.
 
 #### Docker
 
@@ -115,7 +115,7 @@ sudo xray run -c config_client_username.json
 In the current configuration, on the client side XRay creates http/https and socks5 proxies on your PC which can be used by your Telegram
 app or Web browser like this:
 
-![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](figs/browser-proxy-settings.png)
+![browser proxy: http/https proxy 127.0.0.1 at port 801, socks v5 host 127.0.0.1 at port 800](docs/figs/browser-proxy-settings.png)
 
 To check that traffic to domestic and foreing sites goes by different ways, visit, for example,
 [whatismyip.com](https://www.whatismyip.com/) and [2ip.ru](https://2ip.ru/). They should show different IP addressess.
@@ -125,14 +125,14 @@ To check that traffic to domestic and foreing sites goes by different ways, visi
 For Windows GUI clients such as *v2rayN*, *v2rayA* or *nekoray (nekobox)* can be used.
 
 [V2rayN](https://github.com/2dust/v2rayN/) releases can be found [here](https://github.com/2dust/v2rayN/releases). Download asset with core,
-say `v2rayN-With-Core.zip`, unzip, then start. Here is a [graphical instruction for v2rayN](V2RayN.ru.md) (in Russian).
+say `v2rayN-With-Core.zip`, unzip, then start. Here is a [graphical instruction for v2rayN](docs/V2RayN.ru.md) (in Russian).
 
-Detailed instruction for v2rayA can be found [here](V2RayA.ru.md) (in Russian). For short, v2rayA creates a server, and its interface is
+Detailed instruction for v2rayA can be found [here](docs/V2RayA.ru.md) (in Russian). For short, v2rayA creates a server, and its interface is
 available at localhost:2017 in the browser.
 
 [Nekoray (nekobox)](https://github.com/MatsuriDayo/nekoray) releases can be found on [this
 page](https://github.com/MatsuriDayo/nekoray/releases). Choose one of Assets, for instance `nekoray-3.26-2023-12-09-windows64.zip`, download
-then unzip it and run Nekoray. Here is a [graphical instruction (in Russian)](Nekoray.ru.md). Try TUN regime in the case of problems; use
+then unzip it and run Nekoray. Here is a [graphical instruction (in Russian)](docs/Nekoray.ru.md). Try TUN regime in the case of problems; use
 task manager to kill it.
 
 #### MacOS
@@ -146,26 +146,31 @@ sudo xray -config=config_client_username.json
 ```
 
 As alternative, GUI app v2rayA can be used. It creates a server, and its interface is
-available at localhost:2017 in the browser. Instructions can be found [here](V2RayA.ru.md) (in Russian).
+available at localhost:2017 in the browser. Instructions can be found [here](docs/V2RayA.ru.md) (in Russian).
 
 #### Android
 
 For many mobile applications it is enough to paste a client config in a link form from the buffer, and add customgeo in an appropriate form
 (see `misc` dir) to somethere like `Settings/Routing/Custom rules/Direct URL`. Tested applications are listed below.
 
-Use [V2RayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang&pcampaignid=web_share),
-[HiddifyNG](https://play.google.com/store/apps/details?id=ang.hiddify.com&pcampaignid=web_share) or [Hiddify
-Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=web_share). They are very similar to each other, here are
-some instructions for [V2RayNG (RU)](V2RayNG.ru.md) and [HiddifyNG (EN)](HiddifyNG.en.md).
+  - [v2RayTun](https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru) (instructions: [RU](docs/v2RayTun.ru.md), [EN](docs/v2RayTun.md)),
+  - [V2RayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang&pcampaignid=web_share) (instructions: [RU](docs/V2RayNG.ru.md)),
+  - [HiddifyNG](https://play.google.com/store/apps/details?id=ang.hiddify.com&pcampaignid=web_share) (instructions: [EN](docs/HiddifyNG.en.md)),
+  - [Hiddify Next](https://play.google.com/store/apps/details?id=app.hiddify.com&pcampaignid=web_share).
+
+You can also use any other app which configuration is similar to the said.
 
 #### iOS
 
-Use [Streisand](https://apps.apple.com/us/app/streisand/id6450534064). Its configuration is very similar to that of V2Ray and Hiddify, here
-is the [instruction for Streisand](Streisand.md).
+Use
+  - [v2RayTun](https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru) (instructions: [RU](docs/v2RayTun.ru.md), [EN](docs/v2RayTun.md))
+  - or [Streisand](https://apps.apple.com/us/app/streisand/id6450534064) (instructions: [RU](docs/Streisand.ru.md), [EN](docs/Streisand.ru.md)).
+  
+The configuration is very similar to that of V2Ray and Hiddify.
 
 #### OpenWRT
 
-Use *v2rayA*. Detailed instruction can be found [here](V2RayA.ru.md) (in Russian).
+Use *v2rayA*. Detailed instruction can be found [here](docs/V2RayA.ru.md) (in Russian).
 
 #### Others
 
