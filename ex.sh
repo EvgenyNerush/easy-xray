@@ -167,8 +167,14 @@ or leave blank for simple default configuration:"
     if [ -v $private_key ] || [ -v $public_key ]
     then
         keys=$(xray x25519) # string "Private key: Abc... Public key: Xyz..."
-        private_key=$(echo $keys | cut -d " " -f 3) # get 3rd field of fields delimited by spaces
-        public_key=$(echo $keys | cut -d " " -f 6) # get 6th field
+        keysF=$(echo $keys | cut -d " " -f 1) # which keys format xray uses?
+        if [ $keysF = "Private" ]; then
+            private_key=$(echo $keys | cut -d " " -f 3) # get 3rd field of fields delimited by spaces
+            public_key=$(echo $keys | cut -d " " -f 6) # get 6th field
+        else
+            private_key=$(echo $keys | cut -d " " -f 2)
+            public_key=$(echo $keys | cut -d " " -f 4)
+        fi
     fi
     short_id=$(openssl rand -hex 8) # random short_id for REALITY
     #
