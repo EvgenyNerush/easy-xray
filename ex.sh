@@ -168,7 +168,7 @@ or leave blank for simple default configuration:"
     then
         keys=$(xray x25519) # string "Private key: Abc... Public key: Xyz..."
         keysF=$(echo $keys | cut -d " " -f 1) # which keys format xray uses?
-        keyF2=$(echo $keys | cut -d " " -f 4)
+        keysF2=$(echo $keys | cut -d " " -f 4)
         if [ $keysF = "Private" ]; then
             private_key=$(echo $keys | cut -d " " -f 3) # get 3rd field of fields delimited by spaces
             public_key=$(echo $keys | cut -d " " -f 6) # get 6th field
